@@ -27,12 +27,12 @@ const IndexPage = {
             <div class="feature-card">
               <div class="feature-icon">🎯</div>
               <div class="feature-title">智能识别</div>
-              <div class="feature-desc">AI自动识别照片风格</div>
+              <div class="feature-desc">AI识别照片风格</div>
             </div>
             <div class="feature-card">
               <div class="feature-icon">📐</div>
               <div class="feature-title">构图辅助</div>
-              <div class="feature-desc">九宫格 / 黄金分割线</div>
+              <div class="feature-desc">九宫格/黄金分割线</div>
             </div>
             <div class="feature-card">
               <div class="feature-icon">💡</div>

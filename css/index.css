@@ -36,22 +36,23 @@
 
 .quota-info {
   margin-top: 16px;
-  padding: 12px 20px;
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  padding: 12px 24px;
+  background-color: var(--bg-black);
+  border: 2px solid var(--bg-black);
   display: inline-block;
   font-family: 'Courier New', monospace;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
 .quota-label {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: #FFFFFF;
 }
 
 .quota-value {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #FFFFFF;
   margin-left: 8px;
 }
 
@@ -59,14 +60,14 @@
 .features {
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .feature-card {
   flex: 1;
   background-color: var(--bg-white);
   border: 1px solid var(--bg-black);
-  padding: 20px 10px;
+  padding: 16px 8px;
   text-align: center;
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
   position: relative;
@@ -109,29 +110,29 @@
 }
 
 .feature-icon {
-  font-size: 32px;
-  margin-bottom: 12px;
+  font-size: 28px;
+  margin-bottom: 8px;
 }
 
 .feature-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   letter-spacing: 0.5px;
   font-family: 'Helvetica Neue', sans-serif;
-  text-transform: uppercase;
 }
 
 .feature-desc {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 /* 开始按钮 */
 .start-section {
   text-align: center;
-  margin: 32px 0;
+  margin: 24px 0;
 }
 
 .btn-start {
