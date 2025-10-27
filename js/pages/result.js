@@ -273,18 +273,20 @@ const ResultPage = {
     img.onload = () => {
       ctx.drawImage(img, 0, 0, w, h);
       
-      // 大幅增加线宽，确保在高像素图片上清晰可见
-      const baseLineWidth = Math.max(12, Math.min(w, h) / 100); // 最小12px，更粗
+      // 参考示例图片效果，使用更粗的线条
+      const baseLineWidth = Math.max(15, Math.min(w, h) / 80); // 进一步增加线宽
       ctx.lineWidth = baseLineWidth;
       
-      // 使用更大间隔的虚线
-      const dashLength = baseLineWidth * 6; // 虚线段长度增加
-      const gapLength = baseLineWidth * 5; // 间隔长度增加
+      // 使用更大间隔的虚线，与示例图片效果一致
+      const dashLength = baseLineWidth * 8; // 更长的虚线段
+      const gapLength = baseLineWidth * 6; // 更大的间隔
       ctx.setLineDash([dashLength, gapLength]);
       
-      // 强化阴影效果
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+      // 强化阴影效果，确保线条清晰可见
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = 'rgba(0, 0, 0, 1)'; // 完全不透明的阴影
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
       
       if (this.guides.grid) {
         // 九宫格使用亮白色，完全不透明
@@ -296,13 +298,21 @@ const ResultPage = {
         ctx.moveTo(0, h*2/3); ctx.lineTo(w, h*2/3);
         ctx.stroke();
         
-        // 在交叉点绘制更大的圆圈标记
+        // 在交叉点绘制更大更明显的圆圈标记
         ctx.fillStyle = '#FFFFFF';
-        const dotSize = baseLineWidth * 2;
+        ctx.shadowBlur = 8; // 圆点也有阴影
+        const dotSize = baseLineWidth * 2.5;
         [[w/3, h/3], [w/3, h*2/3], [w*2/3, h/3], [w*2/3, h*2/3]].forEach(([x, y]) => {
           ctx.beginPath();
           ctx.arc(x, y, dotSize, 0, Math.PI * 2);
           ctx.fill();
+          // 添加外圈描边，更醒目
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = baseLineWidth / 2;
+          ctx.setLineDash([]);
+          ctx.stroke();
+          ctx.setLineDash([dashLength, gapLength]);
+          ctx.lineWidth = baseLineWidth;
         });
       }
       
@@ -335,16 +345,23 @@ const ResultPage = {
         ctx.moveTo(0, h/2); ctx.lineTo(w, h/2);
         ctx.stroke();
         
-        // 在中心点绘制更大的圆形标记
+        // 在中心点绘制更大更明显的圆形标记
         ctx.fillStyle = '#FF00FF';
-        const centerDotSize = baseLineWidth * 2.5;
+        const centerDotSize = baseLineWidth * 3;
         ctx.beginPath();
         ctx.arc(w/2, h/2, centerDotSize, 0, Math.PI * 2);
         ctx.fill();
+        // 添加外圈描边
+        ctx.strokeStyle = '#FF00FF';
+        ctx.lineWidth = baseLineWidth / 2;
+        ctx.setLineDash([]);
+        ctx.stroke();
       }
       
       // 重置阴影和虚线设置
       ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
       ctx.setLineDash([]);
     };
     img.src = App.globalData.currentImage;
