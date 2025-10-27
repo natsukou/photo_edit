@@ -61,13 +61,15 @@
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  overflow-x: auto; /* 防止在小屏幕上换行 */
 }
 
 .feature-card {
-  flex: 1;
+  flex: 0 0 calc(33.333% - 8px); /* 确保一行3个，不换行 */
+  min-width: 100px; /* 最小宽度确保内容可读 */
   background-color: var(--bg-white);
-  border: 1px solid var(--bg-black);
-  padding: 16px 8px;
+  border: 2px solid var(--bg-black); /* 参考图片，边框加粗 */
+  padding: 20px 12px; /* 增加垂直padding */
   text-align: center;
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
   position: relative;
@@ -110,23 +112,23 @@
 }
 
 .feature-icon {
-  font-size: 28px;
-  margin-bottom: 8px;
+  font-size: 36px; /* 参考图片加大图标 */
+  margin-bottom: 10px;
 }
 
 .feature-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   letter-spacing: 0.5px;
   font-family: 'Helvetica Neue', sans-serif;
 }
 
 .feature-desc {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 /* 开始按钮 */

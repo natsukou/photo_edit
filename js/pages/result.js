@@ -273,23 +273,21 @@ const ResultPage = {
     img.onload = () => {
       ctx.drawImage(img, 0, 0, w, h);
       
-      // 参考示例图片效果，使用更粗的线条
-      const baseLineWidth = Math.max(15, Math.min(w, h) / 80); // 进一步增加线宽
+      // 参考图片2，适中粗细，清晰即可
+      const baseLineWidth = Math.max(8, Math.min(w, h) / 150); // 适中线宽
       ctx.lineWidth = baseLineWidth;
       
-      // 使用更大间隔的虚线，与示例图片效果一致
-      const dashLength = baseLineWidth * 8; // 更长的虚线段
-      const gapLength = baseLineWidth * 6; // 更大的间隔
+      // 使用中等间隔的虚线
+      const dashLength = baseLineWidth * 5;
+      const gapLength = baseLineWidth * 4;
       ctx.setLineDash([dashLength, gapLength]);
       
-      // 强化阴影效果，确保线条清晰可见
-      ctx.shadowBlur = 12;
-      ctx.shadowColor = 'rgba(0, 0, 0, 1)'; // 完全不透明的阴影
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
+      // 适度阴影
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
       
       if (this.guides.grid) {
-        // 九宫格使用亮白色，完全不透明
+        // 九宫格白色线
         ctx.strokeStyle = '#FFFFFF';
         ctx.beginPath();
         ctx.moveTo(w/3, 0); ctx.lineTo(w/3, h);
@@ -297,27 +295,10 @@ const ResultPage = {
         ctx.moveTo(0, h/3); ctx.lineTo(w, h/3);
         ctx.moveTo(0, h*2/3); ctx.lineTo(w, h*2/3);
         ctx.stroke();
-        
-        // 在交叉点绘制更大更明显的圆圈标记
-        ctx.fillStyle = '#FFFFFF';
-        ctx.shadowBlur = 8; // 圆点也有阴影
-        const dotSize = baseLineWidth * 2.5;
-        [[w/3, h/3], [w/3, h*2/3], [w*2/3, h/3], [w*2/3, h*2/3]].forEach(([x, y]) => {
-          ctx.beginPath();
-          ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-          ctx.fill();
-          // 添加外圈描边，更醒目
-          ctx.strokeStyle = '#FFFFFF';
-          ctx.lineWidth = baseLineWidth / 2;
-          ctx.setLineDash([]);
-          ctx.stroke();
-          ctx.setLineDash([dashLength, gapLength]);
-          ctx.lineWidth = baseLineWidth;
-        });
       }
       
       if (this.guides.golden) {
-        // 黄金分割线使用鲜艳的金黄色
+        // 黄金分割线金黄色
         ctx.strokeStyle = '#FFD700';
         ctx.beginPath();
         const r = 0.618;
@@ -329,7 +310,7 @@ const ResultPage = {
       }
       
       if (this.guides.diagonal) {
-        // 对角线使用鲜艳的青色
+        // 对角线青色
         ctx.strokeStyle = '#00FFFF';
         ctx.beginPath();
         ctx.moveTo(0, 0); ctx.lineTo(w, h);
@@ -338,30 +319,16 @@ const ResultPage = {
       }
       
       if (this.guides.center) {
-        // 中心十字使用鲜艳的洋红色
+        // 中心十字洋红色
         ctx.strokeStyle = '#FF00FF';
         ctx.beginPath();
         ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h);
         ctx.moveTo(0, h/2); ctx.lineTo(w, h/2);
         ctx.stroke();
-        
-        // 在中心点绘制更大更明显的圆形标记
-        ctx.fillStyle = '#FF00FF';
-        const centerDotSize = baseLineWidth * 3;
-        ctx.beginPath();
-        ctx.arc(w/2, h/2, centerDotSize, 0, Math.PI * 2);
-        ctx.fill();
-        // 添加外圈描边
-        ctx.strokeStyle = '#FF00FF';
-        ctx.lineWidth = baseLineWidth / 2;
-        ctx.setLineDash([]);
-        ctx.stroke();
       }
       
-      // 重置阴影和虚线设置
+      // 重置设置
       ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
       ctx.setLineDash([]);
     };
     img.src = App.globalData.currentImage;
