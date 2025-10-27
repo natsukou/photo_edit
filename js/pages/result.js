@@ -345,7 +345,6 @@ const ResultPage = {
       return;
     }
     Utils.downloadImage(this.canvas, 'photo-guide.png');
-    Utils.toast('图片已保存');
   },
   
   showModal() {

@@ -126,9 +126,12 @@
 }
 
 .feature-desc {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
   line-height: 1.5;
+  white-space: nowrap; /* 防止文字换行 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 超出显示省略号 */
 }
 
 /* 开始按钮 */
