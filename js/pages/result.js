@@ -40,10 +40,10 @@ const ResultPage = {
           
           <div class="comparison-section">
             <h2 class="section-title">📐 构图分析</h2>
-            <div class="tab-bar">
-              <div class="tab-item active" onclick="ResultPage.switchTab(0)">原图</div>
-              <div class="tab-item" onclick="ResultPage.switchTab(1)">辅助线</div>
-              <div class="tab-item" onclick="ResultPage.switchTab(2)">参考样例</div>
+            <div class="tab-bar" id="tabBar">
+              <div class="tab-item active" data-tab="0">原图</div>
+              <div class="tab-item" data-tab="1">辅助线</div>
+              <div class="tab-item" data-tab="2">参考样例</div>
             </div>
             
             <div class="image-container" id="tabContent0" style="display: block">
@@ -53,10 +53,10 @@ const ResultPage = {
             <div class="image-container" id="tabContent1" style="display: none">
               <canvas id="guideCanvas" style="width: 100%; background: #000;"></canvas>
               <div class="guide-controls">
-                <label class="guide-option"><input type="checkbox" checked onchange="ResultPage.toggleGuide('grid', this.checked)"> 九宫格</label>
-                <label class="guide-option"><input type="checkbox" onchange="ResultPage.toggleGuide('golden', this.checked)"> 黄金分割</label>
-                <label class="guide-option"><input type="checkbox" onchange="ResultPage.toggleGuide('diagonal', this.checked)"> 对角线</label>
-                <label class="guide-option"><input type="checkbox" onchange="ResultPage.toggleGuide('center', this.checked)"> 中心十字</label>
+                <label class="guide-option"><input type="checkbox" checked data-guide="grid"> 九宫格</label>
+                <label class="guide-option"><input type="checkbox" data-guide="golden"> 黄金分割</label>
+                <label class="guide-option"><input type="checkbox" data-guide="diagonal"> 对角线</label>
+                <label class="guide-option"><input type="checkbox" data-guide="center"> 中心十字</label>
               </div>
             </div>
             
@@ -94,17 +94,17 @@ const ResultPage = {
           </div>
           
           <div class="action-section">
-            <button class="btn" onclick="ResultPage.saveImage()">保存辅助线图</button>
-            <button class="btn btn-secondary" onclick="ResultPage.showModal()">返回首页</button>
+            <button class="btn" id="saveBtn">保存辅助线图</button>
+            <button class="btn btn-secondary" id="showModalBtn">返回首页</button>
           </div>
         </div>
         
         <div class="modal hidden" id="quotaModal">
-          <div class="modal-mask" onclick="ResultPage.closeModal()"></div>
+          <div class="modal-mask" id="modalMask"></div>
           <div class="modal-content">
             <div class="modal-header">
               <h3 class="modal-title">🎉 获取更多额度</h3>
-              <span class="modal-close" onclick="ResultPage.closeModal()">×</span>
+              <span class="modal-close" id="modalClose">×</span>
             </div>
             <div class="modal-body">
               <p>扫码添加微信，获取更多免费图片额度！</p>
@@ -118,8 +118,8 @@ const ResultPage = {
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="ResultPage.closeModal()">稍后再说</button>
-              <button class="btn" onclick="ResultPage.backToHome()">返回首页</button>
+              <button class="btn btn-secondary" id="laterBtn">稍后再说</button>
+              <button class="btn" id="backHomeBtn">返回首页</button>
             </div>
           </div>
         </div>
@@ -128,10 +128,104 @@ const ResultPage = {
     
     document.querySelector('[data-page="result"]').classList.remove('hidden');
     console.log('ResultPage DOM 渲染完成');
+    
+    // 绑定事件（微信小程序兼容）
     setTimeout(() => {
       console.log('尝试初始化Canvas...');
       ResultPage.initCanvas();
+      ResultPage.bindEvents();
     }, 100);
+  },
+  
+  bindEvents() {
+    // Tab切换
+    const tabBar = document.getElementById('tabBar');
+    if (tabBar) {
+      tabBar.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tab-item')) {
+          const tab = parseInt(e.target.getAttribute('data-tab'));
+          this.switchTab(tab);
+        }
+      });
+      
+      tabBar.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (e.target.classList.contains('tab-item')) {
+          const tab = parseInt(e.target.getAttribute('data-tab'));
+          this.switchTab(tab);
+        }
+      });
+    }
+    
+    // 辅助线控制
+    const guideControls = document.querySelector('.guide-controls');
+    if (guideControls) {
+      guideControls.addEventListener('change', (e) => {
+        if (e.target.type === 'checkbox') {
+          const guideType = e.target.getAttribute('data-guide');
+          if (guideType) {
+            this.toggleGuide(guideType, e.target.checked);
+          }
+        }
+      });
+    }
+    
+    // 保存按钮
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        this.saveImage();
+      });
+      
+      saveBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.saveImage();
+      });
+    }
+    
+    // 显示弹窗按钮
+    const showModalBtn = document.getElementById('showModalBtn');
+    if (showModalBtn) {
+      showModalBtn.addEventListener('click', () => {
+        this.showModal();
+      });
+      
+      showModalBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.showModal();
+      });
+    }
+    
+    // 关闭弹窗
+    const modalMask = document.getElementById('modalMask');
+    const modalClose = document.getElementById('modalClose');
+    const laterBtn = document.getElementById('laterBtn');
+    
+    [modalMask, modalClose, laterBtn].forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', () => {
+          this.closeModal();
+        });
+        
+        btn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          this.closeModal();
+        });
+      }
+    });
+    
+    // 返回首页按钮
+    const backHomeBtn = document.getElementById('backHomeBtn');
+    if (backHomeBtn) {
+      backHomeBtn.addEventListener('click', () => {
+        this.backToHome();
+      });
+      
+      backHomeBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.backToHome();
+      });
+    }
   },
   
   switchTab(tab) {

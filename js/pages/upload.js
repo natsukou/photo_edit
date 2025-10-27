@@ -18,18 +18,18 @@ const UploadPage = {
           <h1 class="title">上传照片</h1>
           <p class="subtitle">UPLOAD YOUR PHOTO</p>
           
-          <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📷</div>
             <div class="upload-text">点击上传照片</div>
             <div class="upload-tips">支持 JPG / PNG / HEIC / PDF / TIFF</div>
-            <input type="file" id="fileInput" accept="image/*,.heic,.pdf,.tiff" style="display: none;" onchange="UploadPage.handleFileSelect(event)">
+            <input type="file" id="fileInput" accept="image/*,.heic,.pdf,.tiff" style="display: none;">
           </div>
           
           <div class="image-preview hidden" id="imagePreview">
             <img id="previewImg" src="" alt="预览图">
             <div class="image-actions">
-              <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">重新选择</button>
-              <button class="btn" onclick="UploadPage.analyzeImage()">开始分析</button>
+              <button class="btn btn-secondary" id="reSelectBtn">重新选择</button>
+              <button class="btn" id="analyzeBtn">开始分析</button>
             </div>
           </div>
           
@@ -42,6 +42,51 @@ const UploadPage = {
     `;
     
     document.querySelector('[data-page="upload"]').classList.remove('hidden');
+    
+    // 绑定事件（微信小程序兼容）
+    setTimeout(() => {
+      const uploadArea = document.getElementById('uploadArea');
+      const fileInput = document.getElementById('fileInput');
+      const reSelectBtn = document.getElementById('reSelectBtn');
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      
+      if (uploadArea && fileInput) {
+        uploadArea.addEventListener('click', () => {
+          fileInput.click();
+        });
+        
+        uploadArea.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+          UploadPage.handleFileSelect(e);
+        });
+      }
+      
+      if (reSelectBtn && fileInput) {
+        reSelectBtn.addEventListener('click', () => {
+          fileInput.click();
+        });
+        
+        reSelectBtn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          fileInput.click();
+        });
+      }
+      
+      if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', () => {
+          UploadPage.analyzeImage();
+        });
+        
+        analyzeBtn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          UploadPage.analyzeImage();
+        });
+      }
+    }, 10);
   },
   
   handleFileSelect(e) {

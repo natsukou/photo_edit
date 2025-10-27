@@ -38,7 +38,7 @@ const StyleSelectPage = {
           </div>
           
           <div class="action-section">
-            <button class="btn" onclick="StyleSelectPage.confirm()">确认选择</button>
+            <button class="btn" id="confirmBtn">确认选择</button>
           </div>
         </div>
       </div>
@@ -54,6 +54,20 @@ const StyleSelectPage = {
       if (customDescEl) {
         customDescEl.addEventListener('input', (e) => {
           document.getElementById('charCount').textContent = e.target.value.length;
+        });
+      }
+      
+      // 绑定确认按钮事件
+      const confirmBtn = document.getElementById('confirmBtn');
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+          StyleSelectPage.confirm();
+        });
+        
+        // 添加触摸事件支持
+        confirmBtn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          StyleSelectPage.confirm();
         });
       }
     }, 10);
@@ -74,18 +88,80 @@ const StyleSelectPage = {
     
     console.log('题材数量:', this.categories.length, '风格数量:', this.styles.length);
     
+    // 渲染题材标签（不使用onclick，改用事件委托）
     const categoryHTML = this.categories.map(cat => 
-      `<span class="tag ${this.selectedCategory === cat ? 'active' : ''}" onclick="StyleSelectPage.selectCategory('${cat}')">${cat}</span>`
+      `<span class="tag ${this.selectedCategory === cat ? 'active' : ''}" data-category="${cat}">${cat}</span>`
     ).join('');
     
+    // 渲染风格标签（不使用onclick，改用事件委托）
     const styleHTML = this.styles.map(style => 
-      `<span class="tag ${this.selectedStyles.includes(style) ? 'active' : ''}" onclick="StyleSelectPage.selectStyle('${style}')">${style}</span>`
+      `<span class="tag ${this.selectedStyles.includes(style) ? 'active' : ''}" data-style="${style}">${style}</span>`
     ).join('');
     
     categoryList.innerHTML = categoryHTML;
     styleList.innerHTML = styleHTML;
     
     console.log('标签渲染完成 - 题材:', categoryList.children.length, '风格:', styleList.children.length);
+    
+    // 使用事件委托绑定点击事件（微信小程序兼容）
+    this.bindTagEvents();
+  },
+  
+  bindTagEvents() {
+    const categoryList = document.getElementById('categoryList');
+    const styleList = document.getElementById('styleList');
+    
+    if (categoryList) {
+      // 移除旧的事件监听（如果有）
+      categoryList.replaceWith(categoryList.cloneNode(true));
+      const newCategoryList = document.getElementById('categoryList');
+      
+      newCategoryList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tag')) {
+          const category = e.target.getAttribute('data-category');
+          if (category) {
+            this.selectCategory(category);
+          }
+        }
+      });
+      
+      // 添加触摸事件支持（移动端）
+      newCategoryList.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (e.target.classList.contains('tag')) {
+          const category = e.target.getAttribute('data-category');
+          if (category) {
+            this.selectCategory(category);
+          }
+        }
+      });
+    }
+    
+    if (styleList) {
+      // 移除旧的事件监听（如果有）
+      styleList.replaceWith(styleList.cloneNode(true));
+      const newStyleList = document.getElementById('styleList');
+      
+      newStyleList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tag')) {
+          const style = e.target.getAttribute('data-style');
+          if (style) {
+            this.selectStyle(style);
+          }
+        }
+      });
+      
+      // 添加触摸事件支持（移动端）
+      newStyleList.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (e.target.classList.contains('tag')) {
+          const style = e.target.getAttribute('data-style');
+          if (style) {
+            this.selectStyle(style);
+          }
+        }
+      });
+    }
   },
   
   selectCategory(category) {

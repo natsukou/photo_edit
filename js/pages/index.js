@@ -42,7 +42,7 @@ const IndexPage = {
           </div>
           
           <div class="start-section">
-            <button class="btn btn-start" onclick="Router.navigate('upload')">
+            <button class="btn btn-start" id="startBtn">
               开始分析照片
             </button>
             <p class="tips">支持 JPG / PNG / HEIC / PDF / TIFF</p>
@@ -77,5 +77,20 @@ const IndexPage = {
     `;
     
     document.querySelector('[data-page="index"]').classList.remove('hidden');
+    
+    // 绑定开始按钮事件（微信小程序兼容）
+    setTimeout(() => {
+      const startBtn = document.getElementById('startBtn');
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          Router.navigate('upload');
+        });
+        
+        startBtn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          Router.navigate('upload');
+        });
+      }
+    }, 10);
   }
 };
