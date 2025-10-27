@@ -1,0 +1,22 @@
+{
+  "name": "ai-photo-guide-h5",
+  "version": "1.0.0",
+  "description": "AI拍照辅助 - H5网页版",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "npx http-server -p 8080 -o"
+  },
+  "keywords": [
+    "photography",
+    "ai",
+    "photo-guide",
+    "h5",
+    "web-app"
+  ],
+  "author": "GreeNakia",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

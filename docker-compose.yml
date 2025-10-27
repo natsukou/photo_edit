@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  ai-photo-guide:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ai-photo-guide-h5:latest
+    container_name: ai-photo-guide-h5
+    ports:
+      - "7860:7860"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    labels:
+      - "com.docker.compose.project=ai-photo-guide"
+    networks:
+      - ai-photo-network
+
+networks:
+  ai-photo-network:
+    driver: bridge

@@ -1,0 +1,293 @@
+/* 结果页面样式 */
+.result-container {
+  padding-top: 16px;
+}
+
+.info-card {
+  background-color: var(--bg-white);
+  border: 2px solid var(--bg-black);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.info-item {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'Helvetica Neue', sans-serif;
+}
+
+.info-value {
+  color: var(--text-secondary);
+  font-family: 'Georgia', serif;
+}
+
+.comparison-section {
+  background-color: var(--bg-white);
+  border: 2px solid var(--bg-black);
+  padding: 0;
+  margin-bottom: 16px;
+}
+
+.comparison-section .section-title {
+  padding: 16px;
+  margin: 0;
+  border-bottom: 2px solid var(--bg-black);
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Helvetica Neue', sans-serif;
+}
+
+.tab-bar {
+  display: flex;
+  border-bottom: 2px solid var(--bg-black);
+}
+
+.tab-item {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-right: 1px solid var(--border-color);
+  transition: all 0.2s;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+}
+
+.tab-item:last-child {
+  border-right: none;
+}
+
+.tab-item:hover {
+  background-color: var(--bg-primary);
+}
+
+.tab-item.active {
+  background-color: var(--bg-black);
+  color: var(--bg-primary);
+}
+
+.image-container {
+  padding: 16px;
+}
+
+.image-container img,
+.image-container canvas {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border-color);
+}
+
+.guide-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+}
+
+.guide-option {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+}
+
+.guide-option input[type="checkbox"] {
+  margin-right: 6px;
+  cursor: pointer;
+}
+
+.reference-caption {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+
+.advice-section {
+  background-color: var(--bg-white);
+  border: 2px solid var(--bg-black);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.advice-section .section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Helvetica Neue', sans-serif;
+}
+
+.advice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.advice-item {
+  display: flex;
+  gap: 16px;
+}
+
+.advice-number {
+  width: 32px;
+  height: 32px;
+  background-color: var(--bg-black);
+  color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: 'Georgia', serif;
+}
+
+.advice-content {
+  flex: 1;
+}
+
+.advice-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  font-family: 'Helvetica Neue', sans-serif;
+}
+
+.advice-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 模态框 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+  position: relative;
+  width: 90%;
+  max-width: 400px;
+  background-color: var(--bg-primary);
+  border: 3px solid var(--bg-black);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 2px solid var(--bg-black);
+  background: linear-gradient(to right, 
+    var(--color-gray-green) 0%, var(--color-gray-green) 50%,
+    var(--color-light-yellow) 50%, var(--color-light-yellow) 100%);
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  font-family: 'Helvetica Neue', sans-serif;
+}
+
+.modal-close {
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text-primary);
+  cursor: pointer;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  color: var(--text-secondary);
+}
+
+.modal-body {
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.modal-body p {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.qrcode-container {
+  margin: 20px 0;
+}
+
+.contact-info {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-top: 16px;
+  font-family: 'Courier New', monospace;
+}
+
+.contact-info strong {
+  font-size: 15px;
+  margin-left: 6px;
+  color: var(--bg-black);
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 2px solid var(--bg-black);
+}
+
+.modal-footer .btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 13px;
+}
