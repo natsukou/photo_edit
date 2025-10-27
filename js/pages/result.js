@@ -273,18 +273,18 @@ const ResultPage = {
     img.onload = () => {
       ctx.drawImage(img, 0, 0, w, h);
       
-      // 根据图片尺寸动态调整线宽，高像素图片使用更粗的线条
-      const baseLineWidth = Math.max(6, Math.min(w, h) / 200); // 最小6px，根据图片大小自适应
+      // 大幅增加线宽，确保在高像素图片上清晰可见
+      const baseLineWidth = Math.max(12, Math.min(w, h) / 100); // 最小12px，更粗
       ctx.lineWidth = baseLineWidth;
       
-      // 使用虚线，间隔更大，存在感更强
-      const dashLength = baseLineWidth * 4; // 虚线长度
-      const gapLength = baseLineWidth * 3; // 间隔长度
+      // 使用更大间隔的虚线
+      const dashLength = baseLineWidth * 6; // 虚线段长度增加
+      const gapLength = baseLineWidth * 5; // 间隔长度增加
       ctx.setLineDash([dashLength, gapLength]);
       
-      // 添加强烈的阴影效果，增强对比度
-      ctx.shadowBlur = 6;
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      // 强化阴影效果
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
       
       if (this.guides.grid) {
         // 九宫格使用亮白色，完全不透明
@@ -298,7 +298,7 @@ const ResultPage = {
         
         // 在交叉点绘制更大的圆圈标记
         ctx.fillStyle = '#FFFFFF';
-        const dotSize = baseLineWidth * 1.5;
+        const dotSize = baseLineWidth * 2;
         [[w/3, h/3], [w/3, h*2/3], [w*2/3, h/3], [w*2/3, h*2/3]].forEach(([x, y]) => {
           ctx.beginPath();
           ctx.arc(x, y, dotSize, 0, Math.PI * 2);
@@ -337,7 +337,7 @@ const ResultPage = {
         
         // 在中心点绘制更大的圆形标记
         ctx.fillStyle = '#FF00FF';
-        const centerDotSize = baseLineWidth * 2;
+        const centerDotSize = baseLineWidth * 2.5;
         ctx.beginPath();
         ctx.arc(w/2, h/2, centerDotSize, 0, Math.PI * 2);
         ctx.fill();
