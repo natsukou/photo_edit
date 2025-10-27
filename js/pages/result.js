@@ -273,18 +273,18 @@ const ResultPage = {
     img.onload = () => {
       ctx.drawImage(img, 0, 0, w, h);
       
-      // 参考图片2，适中粗细，清晰即可
-      const baseLineWidth = Math.max(8, Math.min(w, h) / 150); // 适中线宽
+      // 稍微细一点，去掉阴影
+      const baseLineWidth = Math.max(5, Math.min(w, h) / 200); // 调细一点
       ctx.lineWidth = baseLineWidth;
       
       // 使用中等间隔的虚线
-      const dashLength = baseLineWidth * 5;
+      const dashLength = baseLineWidth * 6;
       const gapLength = baseLineWidth * 4;
       ctx.setLineDash([dashLength, gapLength]);
       
-      // 适度阴影
-      ctx.shadowBlur = 6;
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+      // 去掉阴影
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
       
       if (this.guides.grid) {
         // 九宫格白色线
@@ -328,7 +328,6 @@ const ResultPage = {
       }
       
       // 重置设置
-      ctx.shadowBlur = 0;
       ctx.setLineDash([]);
     };
     img.src = App.globalData.currentImage;
