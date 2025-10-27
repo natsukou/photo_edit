@@ -273,14 +273,21 @@ const ResultPage = {
     img.onload = () => {
       ctx.drawImage(img, 0, 0, w, h);
       
-      // 增加线条粗细，使用实线，颜色更鲜明
-      ctx.lineWidth = 4; // 从2增加到4
-      ctx.setLineDash([]); // 改为实线，更清晰
-      ctx.shadowBlur = 3; // 添加阴影效果，增强对比度
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      // 根据图片尺寸动态调整线宽，高像素图片使用更粗的线条
+      const baseLineWidth = Math.max(6, Math.min(w, h) / 200); // 最小6px，根据图片大小自适应
+      ctx.lineWidth = baseLineWidth;
+      
+      // 使用虚线，间隔更大，存在感更强
+      const dashLength = baseLineWidth * 4; // 虚线长度
+      const gapLength = baseLineWidth * 3; // 间隔长度
+      ctx.setLineDash([dashLength, gapLength]);
+      
+      // 添加强烈的阴影效果，增强对比度
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
       
       if (this.guides.grid) {
-        // 九宫格改为亮白色，完全不透明
+        // 九宫格使用亮白色，完全不透明
         ctx.strokeStyle = '#FFFFFF';
         ctx.beginPath();
         ctx.moveTo(w/3, 0); ctx.lineTo(w/3, h);
@@ -289,17 +296,18 @@ const ResultPage = {
         ctx.moveTo(0, h*2/3); ctx.lineTo(w, h*2/3);
         ctx.stroke();
         
-        // 绘制交叉点圆圈，增强视觉效果
+        // 在交叉点绘制更大的圆圈标记
         ctx.fillStyle = '#FFFFFF';
+        const dotSize = baseLineWidth * 1.5;
         [[w/3, h/3], [w/3, h*2/3], [w*2/3, h/3], [w*2/3, h*2/3]].forEach(([x, y]) => {
           ctx.beginPath();
-          ctx.arc(x, y, 6, 0, Math.PI * 2);
+          ctx.arc(x, y, dotSize, 0, Math.PI * 2);
           ctx.fill();
         });
       }
       
       if (this.guides.golden) {
-        // 黄金分割线改为鲜艳的黄色
+        // 黄金分割线使用鲜艳的金黄色
         ctx.strokeStyle = '#FFD700';
         ctx.beginPath();
         const r = 0.618;
@@ -311,7 +319,7 @@ const ResultPage = {
       }
       
       if (this.guides.diagonal) {
-        // 对角线改为鲜艳的青色
+        // 对角线使用鲜艳的青色
         ctx.strokeStyle = '#00FFFF';
         ctx.beginPath();
         ctx.moveTo(0, 0); ctx.lineTo(w, h);
@@ -320,22 +328,24 @@ const ResultPage = {
       }
       
       if (this.guides.center) {
-        // 中心十字改为鲜艳的洋红色
+        // 中心十字使用鲜艳的洋红色
         ctx.strokeStyle = '#FF00FF';
         ctx.beginPath();
         ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h);
         ctx.moveTo(0, h/2); ctx.lineTo(w, h/2);
         ctx.stroke();
         
-        // 在中心点绘制圆形标记
+        // 在中心点绘制更大的圆形标记
         ctx.fillStyle = '#FF00FF';
+        const centerDotSize = baseLineWidth * 2;
         ctx.beginPath();
-        ctx.arc(w/2, h/2, 8, 0, Math.PI * 2);
+        ctx.arc(w/2, h/2, centerDotSize, 0, Math.PI * 2);
         ctx.fill();
       }
       
-      // 重置阴影设置
+      // 重置阴影和虚线设置
       ctx.shadowBlur = 0;
+      ctx.setLineDash([]);
     };
     img.src = App.globalData.currentImage;
   },
