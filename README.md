@@ -30,6 +30,31 @@
 ## 🚀 在线演示
 
 - **ModelScope Studio**: [https://www.modelscope.cn/studios/nakia9/photo_advice2](https://www.modelscope.cn/studios/nakia9/photo_advice2)
+- **GitHub Pages**: [https://natsukou.github.io/photo_edit](https://natsukou.github.io/photo_edit) *(即将上线)*
+
+## 📸 界面展示
+
+### 首页 - 复古报纸风格
+![首页](screenshots/home.png)
+
+*展示剩余额度、三大功能特色和开始按钮*
+
+### 风格选择页
+![风格选择](screenshots/style-select.png)
+
+*支持10种题材分类和20+种风格标签*
+
+### 构图辅助线效果
+![辅助线效果](screenshots/result.png)
+
+*提供九宫格、黄金分割、对角线、中心十字4种辅助线*
+
+### 拍摄建议
+![拍摄建议](screenshots/advice.png)
+
+*AI生成个性化的构图、光线和角度建议*
+
+> **注**: 截图请查看 [screenshots](screenshots/) 目录。如需更新截图，请参考该目录下的说明文档。
 
 ## 💻 技术栈
 
@@ -180,6 +205,18 @@ const isWeChat = /micromessenger/i.test(navigator.userAgent);
 - [ ] 社交分享功能
 - [ ] 拍摄教程库
 - [ ] 批量处理功能
+
+## 🚀 GitHub Pages 部署
+
+本项目支持通过 GitHub Pages 进行在线演示，启用步骤：
+
+1. 访问 [Settings > Pages](https://github.com/natsukou/photo_edit/settings/pages)
+2. Source 选择 `Deploy from a branch`
+3. 分支选择 `master`，目录选择 `/ (root)`
+4. 点击 "Save"
+5. 等待 1-5 分钟后访问: https://natsukou.github.io/photo_edit
+
+📝 详细部署说明请查看 [.github-pages.md](.github-pages.md)
 
 ## 🤝 贡献指南
 
