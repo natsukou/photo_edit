@@ -43,7 +43,7 @@ const IndexPage = {
           
           <div class="start-section">
             <button class="btn btn-start" id="startBtn">
-              开始分析照片
+              开始美化照片
             </button>
             <p class="tips">支持 JPG / PNG / HEIC / PDF / TIFF</p>
           </div>
