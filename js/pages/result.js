@@ -20,6 +20,10 @@ const ResultPage = {
     const sampleUrl = SampleImages.getSampleImage(category, style.split(' ')[0]);
     console.log('sampleUrl:', sampleUrl);
     
+    // 获取AI建议
+    const advice = AdviceGenerator.getAdvice(category, style);
+    console.log('生成的建议:', advice);
+    
     App.consumeQuota();
     
     const app = document.getElementById('app');
@@ -73,21 +77,21 @@ const ResultPage = {
                 <div class="advice-number">1</div>
                 <div class="advice-content">
                   <h3 class="advice-title">构图建议</h3>
-                  <p class="advice-desc">建议将主体放在九宫格的交叉点上，利用三分法构图使画面更加平衡。当前主体位置略偏中心，缺少视觉张力。</p>
+                  <p class="advice-desc">${advice.composition}</p>
                 </div>
               </div>
               <div class="advice-item">
                 <div class="advice-number">2</div>
                 <div class="advice-content">
                   <h3 class="advice-title">光线处理</h3>
-                  <p class="advice-desc">目标风格需要柔和的自然光。建议选择清晨或傍晚的黄金时段拍摄，避免正午的强烈直射光。可以利用侧逆光营造层次感。</p>
+                  <p class="advice-desc">${advice.lighting}</p>
                 </div>
               </div>
               <div class="advice-item">
                 <div class="advice-number">3</div>
                 <div class="advice-content">
                   <h3 class="advice-title">拍摄角度</h3>
-                  <p class="advice-desc">可以尝试稍低的拍摄角度，突出主体的立体感。同时注意背景的简洁性，避免杂乱元素分散注意力。</p>
+                  <p class="advice-desc">${advice.angle}</p>
                 </div>
               </div>
             </div>
