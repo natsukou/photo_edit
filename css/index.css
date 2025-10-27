@@ -59,20 +59,23 @@
 /* 功能卡片 */
 .features {
   display: flex;
-  gap: 12px;
+  gap: 8px; /* 减小间距 */
   margin-bottom: 20px;
-  overflow-x: auto; /* 防止在小屏幕上换行 */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .feature-card {
-  flex: 0 0 calc(33.333% - 8px); /* 确保一行3个，不换行 */
-  min-width: 100px; /* 最小宽度确保内容可读 */
+  flex: 1 1 0; /* 平均分配宽度 */
+  min-width: 0; /* 允许收缩 */
+  max-width: calc(33.333% - 6px); /* 限制最大宽度 */
   background-color: var(--bg-white);
   border: 2px solid var(--bg-black); /* 参考图片，边框加粗 */
-  padding: 20px 12px; /* 增加垂直padding */
+  padding: 16px 6px; /* 减小水平padding */
   text-align: center;
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
   position: relative;
+  box-sizing: border-box;
 }
 
 .feature-card:nth-child(1)::after {
@@ -112,23 +115,24 @@
 }
 
 .feature-icon {
-  font-size: 36px; /* 参考图片加大图标 */
-  margin-bottom: 10px;
+  font-size: 32px; /* 调整图标大小 */
+  margin-bottom: 8px;
 }
 
 .feature-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   letter-spacing: 0.5px;
   font-family: 'Helvetica Neue', sans-serif;
+  white-space: nowrap; /* 防止标题换行 */
 }
 
 .feature-desc {
-  font-size: 11px;
+  font-size: 10px; /* 进一步减小字号 */
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.4;
   white-space: nowrap; /* 防止文字换行 */
   overflow: hidden;
   text-overflow: ellipsis; /* 超出显示省略号 */
@@ -249,7 +253,23 @@
 /* 响应式 */
 @media (max-width: 600px) {
   .features {
-    flex-direction: column;
+    gap: 6px; /* 手机端进一步减小间距 */
+  }
+  
+  .feature-card {
+    padding: 14px 4px; /* 手机端减小padding */
+  }
+  
+  .feature-icon {
+    font-size: 28px; /* 手机端减小图标 */
+  }
+  
+  .feature-title {
+    font-size: 12px;
+  }
+  
+  .feature-desc {
+    font-size: 9px;
   }
   
   .btn-start {
