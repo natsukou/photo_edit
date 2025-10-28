@@ -111,8 +111,31 @@ const UploadPage = {
     document.getElementById('imagePreview').classList.add('hidden');
     document.getElementById('loadingSection').classList.remove('hidden');
     
-    setTimeout(() => {
-      Router.navigate('style-select');
-    }, 2000);
+    try {
+      // 调用阿里云AI识别图片风格
+      const result = await AliCloud.recognizeStyle(this.imageUrl);
+      
+      if (result) {
+        // 保存AI识别结果
+        App.globalData.aiRecognizedCategory = result.category;
+        App.globalData.aiRecognizedStyle = result.style;
+        App.globalData.aiConfidence = result.confidence;
+        
+        console.log('AI识别成功:', result);
+        
+        // 跳转到风格选择页（可以预填AI识别的结果）
+        Router.navigate('style-select');
+      } else {
+        // AI识别失败，仍然跳转，让用户手动选择
+        console.warn('AI识别失败，跳转到手动选择');
+        Utils.toast('AI识别失败，请手动选择风格');
+        Router.navigate('style-select');
+      }
+    } catch (error) {
+      console.error('AI分析错误:', error);
+      Utils.toast('分析失败，请重试');
+      document.getElementById('loadingSection').classList.add('hidden');
+      document.getElementById('imagePreview').classList.remove('hidden');
+    }
   }
 };
