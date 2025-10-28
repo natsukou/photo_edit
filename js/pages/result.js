@@ -94,6 +94,27 @@ const ResultPage = {
                   <p class="advice-desc">${advice.angle}</p>
                 </div>
               </div>
+              <div class="advice-item">
+                <div class="advice-number">4</div>
+                <div class="advice-content">
+                  <h3 class="advice-title">后期处理</h3>
+                  <p class="advice-desc">${advice.postProcessing}</p>
+                </div>
+              </div>
+              <div class="advice-item">
+                <div class="advice-number">5</div>
+                <div class="advice-content">
+                  <h3 class="advice-title">道具推荐</h3>
+                  <p class="advice-desc">${advice.props}</p>
+                </div>
+              </div>
+              <div class="advice-item">
+                <div class="advice-number">6</div>
+                <div class="advice-content">
+                  <h3 class="advice-title">注意事项</h3>
+                  <p class="advice-desc">${advice.tips}</p>
+                </div>
+              </div>
             </div>
           </div>
           

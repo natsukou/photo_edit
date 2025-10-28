@@ -1,12 +1,15 @@
-// AI拍摄建议生成器
+// AI拍摄建议生成器（完整版）
 const AdviceGenerator = {
-  // 获取建议
+  // 获取完整建议（6个模块）
   getAdvice(category, style) {
-    const composition = this.getCompositionAdvice(category, style);
-    const lighting = this.getLightingAdvice(category, style);
-    const angle = this.getAngleAdvice(category, style);
-    
-    return { composition, lighting, angle };
+    return {
+      composition: this.getCompositionAdvice(category, style),
+      lighting: this.getLightingAdvice(category, style),
+      angle: this.getAngleAdvice(category, style),
+      postProcessing: this.getPostProcessingAdvice(category, style),
+      props: this.getPropsAdvice(category, style),
+      tips: this.getTipsAdvice(category, style)
+    };
   },
   
   // 构图建议
@@ -100,18 +103,83 @@ const AdviceGenerator = {
   
   // 查找匹配的建议
   findAdvice(adviceMap, category, style) {
-    // 获取该题材的建议集
     const categoryAdvice = adviceMap[category] || adviceMap['人像'];
-    
-    // 查找匹配的风格关键词
     const styleKeywords = ['日系', '港风', '电影', '胶片', '大气', '极简', '现代', '高级'];
     for (const keyword of styleKeywords) {
       if (style.includes(keyword) && categoryAdvice[keyword]) {
         return categoryAdvice[keyword];
       }
     }
-    
-    // 返回默认建议
     return categoryAdvice['default'] || categoryAdvice[Object.keys(categoryAdvice)[0]];
+  },
+  
+  // 后期处理建议
+  getPostProcessingAdvice(category, style) {
+    const adviceMap = {
+      '人像': {
+        '日系': '提高曝光+10，降低对比-5，增加饱和度+15。使用清新滑块或VSCO的A6滞镜，营造通透感。',
+        '港风': '增加颗粒感，降低高光-10，提高阴影+10。适当增加暗角，使用暗调滞镜营造复古氛围。',
+        '电影': '增加暗角制造电影感，降低清晰度-10营造朴质感。可使用蓝橙色调分离增加氛围。',
+        'default': '适当调整曝光和对比，保持皮肤自然质感。可适度磨皮美白，但避免过度处理。'
+      },
+      '风光摄影': {
+        '日系': '提高鲜艳度+20，稍微增加饱和度。HSL调整天空为清新蓝，植物为柔和绿。',
+        '大气': '增加清晰度和细节，适当提高对比。使用渐变滞镜加深天空，突出云彩层次。',
+        'default': '调整白平衡还原真实色彩。适当增加清晰度和细节，突出风光的层次感。'
+      },
+      '建筑': {
+        '极简': '黑白转换或降低饱和度。提高对比突出线条，增加清晰度强调几何美感。',
+        'default': '保持线条的平直，可使用透视校正功能。适当增加清晰度和结构。'
+      },
+      '美食': {
+        '日系': '提高曝光和鲜艳度，让食物显得更有食欲。可适当加暖色温。',
+        'default': '适当提高鲜艳度和饱和度，突出食物色泽。注意保持自然质感。'
+      }
+    };
+    return this.findAdvice(adviceMap, category, style);
+  },
+  
+  // 道具推荐
+  getPropsAdvice(category, style) {
+    const adviceMap = {
+      '人像': {
+        '日系': '推荐道具：白色或米色衣服、透明雨伞、花环、鲜花、白色太阳帽。避免过于复杂的图案和鲜艳色彩。',
+        '港风': '推荐道具：复古太阳镜、皮夹克、烟、报纸、老式相机。营造复古港片氛围。',
+        '电影': '推荐道具：帽子、围巾、手表、书籍、品质感包包。营造故事感和氛围感。',
+        'default': '根据拍摄主题准备相应道具，注意道具的色彩和风格与整体画面协调。'
+      },
+      '风光摄影': {
+        'default': '推荐器材：三脚架、CPL偏振镜、ND减光镜、广角镜头。根据光线情况选择合适的滞镜。'
+      },
+      '建筑': {
+        'default': '推荐器材：三脚架（保持稳定）、移轴镜头或广角镜头、水平仪。注意控制透视畸变。'
+      },
+      '美食': {
+        '日系': '推荐道具：白色或木色餐具、麻布桌布、小鲜花、干花、透明或白色杯子。',
+        'default': '注意餐具搭配，选择简洁的背景。可适当加入配菜、调料等丰富画面。'
+      }
+    };
+    return this.findAdvice(adviceMap, category, style);
+  },
+  
+  // 注意事项
+  getTipsAdvice(category, style) {
+    const adviceMap = {
+      '人像': {
+        '日系': '注意事项：保持眼神的自然，微笑不要过于僵硬。拍摄时可以给模特一些互动指令，让姿态更加自然。',
+        '港风': '注意事项：营造情绪和故事感，可以让模特带有一些情绪。注意眼神的表达，有故事感的眼神更加分。',
+        'default': '注意事项：与模特保持沟通，营造轻松氛围。注意眼神光和姿态，多拍一些保证有好片。'
+      },
+      '风光摄影': {
+        'default': '注意事项：提前查看天气和日出日落时间。使用三脚架保证画面清晰。多拍几张不同曝光值，后期可以HDR合成。'
+      },
+      '建筑': {
+        'default': '注意事项：保持相机水平，避免画面倾斜。注意透视畸变，必要时后期校正。选择合适的角度展现建筑特色。'
+      },
+      '美食': {
+        'default': '注意事项：拍摄前设计好摆盘，保持食物的新鲜状态。注意背景的整洁，避免杂乱元素。可以适当加一些烟雾效果增加氛围。'
+      }
+    };
+    return this.findAdvice(adviceMap, category, style);
   }
 };
