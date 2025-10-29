@@ -7,7 +7,35 @@ const App = {
     currentStyle: ''
   },
   
-  loadQuota() {
+  async initUser() {
+    // 尝试从服务器登录
+    try {
+      const user = await API.userLogin({
+        nickname: '摄影爱好者'
+      });
+      console.log('用户登录成功:', user);
+    } catch (error) {
+      console.log('用户登录失败，使用本地模式');
+    }
+  },
+  
+  async loadQuota() {
+    // 尝试从服务器获取用户信息
+    const user_id = Utils.storage.get('user_id');
+    if (user_id) {
+      try {
+        const userInfo = await API.getUserInfo(user_id);
+        if (userInfo) {
+          this.globalData.remainingQuota = userInfo.remaining_quota;
+          Utils.storage.set('remainingQuota', userInfo.remaining_quota);
+          return;
+        }
+      } catch (error) {
+        console.log('从服务器获取配额失败，使用本地配额');
+      }
+    }
+    
+    // 降级到本地存储
     const quota = Utils.storage.get('remainingQuota');
     if (quota !== null) {
       this.globalData.remainingQuota = quota;
@@ -17,8 +45,22 @@ const App = {
     }
   },
   
-  consumeQuota() {
+  async consumeQuota() {
     if (this.globalData.remainingQuota > 0) {
+      // 尝试从服务器消费配额
+      const user_id = Utils.storage.get('user_id');
+      if (user_id) {
+        try {
+          const result = await API.consumeQuota(user_id);
+          this.globalData.remainingQuota = result.remaining_quota;
+          Utils.storage.set('remainingQuota', result.remaining_quota);
+          return true;
+        } catch (error) {
+          console.log('服务器消费配额失败，使用本地配额');
+        }
+      }
+      
+      // 降级到本地扣减
       this.globalData.remainingQuota--;
       Utils.storage.set('remainingQuota', this.globalData.remainingQuota);
       return true;
@@ -32,10 +74,16 @@ const App = {
 };
 
 // 页面初始化
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('App初始化...');
-  App.loadQuota();
   
+  // 初始化用户
+  await App.initUser();
+  
+  // 加载配额
+  await App.loadQuota();
+  
+  // 注册路由
   Router.register('index', IndexPage.render);
   Router.register('upload', UploadPage.render);
   Router.register('style-select', StyleSelectPage.render);

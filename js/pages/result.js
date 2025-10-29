@@ -5,7 +5,7 @@ const ResultPage = {
   currentTab: 0,
   guides: { grid: true, golden: false, diagonal: false, center: false },
   
-  render() {
+  async render() {
     console.log('ResultPage.render 被调用');
     console.log('App.globalData:', App.globalData);
     
@@ -24,7 +24,31 @@ const ResultPage = {
     const advice = AdviceGenerator.getAdvice(category, style);
     console.log('生成的建议:', advice);
     
-    App.consumeQuota();
+    // 消费配额
+    await App.consumeQuota();
+    
+    // 上报照片记录到服务器
+    try {
+      const photoData = await API.createPhotoRecord({
+        category: category,
+        style: style,
+        photo_url: imageUrl ? imageUrl.substring(0, 100) : '',
+        photo_size: 0,
+        photo_width: 0,
+        photo_height: 0,
+        custom_description: ''
+      });
+      console.log('照片记录已上报:', photoData);
+    } catch (error) {
+      console.error('上报照片记录失败:', error);
+    }
+    
+    // 记录页面访问
+    API.recordPageView({
+      page_name: 'result',
+      previous_page: 'style-select',
+      duration: 0
+    });
     
     const app = document.getElementById('app');
     console.log('app 元素:', app);
@@ -361,6 +385,23 @@ const ResultPage = {
   toggleGuide(type, checked) {
     this.guides[type] = checked;
     this.drawGuides();
+    
+    // 上报辅助线使用数据
+    API.recordGuideUsage({
+      grid_enabled: this.guides.grid,
+      golden_enabled: this.guides.golden,
+      diagonal_enabled: this.guides.diagonal,
+      center_enabled: this.guides.center,
+      downloaded: false,
+      view_duration: 0
+    });
+    
+    // 记录用户事件
+    API.recordEvent({
+      event_type: 'toggle_guide',
+      event_target: type,
+      event_data: { checked }
+    });
   },
   
   saveImage() {
@@ -368,6 +409,19 @@ const ResultPage = {
       Utils.toast('请先切换到辅助线标签页');
       return;
     }
+    
+    // 上报下载事件
+    API.recordDownload();
+    
+    // 记录用户事件
+    API.recordEvent({
+      event_type: 'download',
+      event_target: 'guide-image',
+      event_data: {
+        guides: this.guides
+      }
+    });
+    
     Utils.downloadImage(this.canvas, 'photo-guide.png');
   },
   
