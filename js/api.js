@@ -1,8 +1,8 @@
 // API 基础配置
 const API_CONFIG = {
-  // 生产环境使用你的ECS公网IP，本地开发使用localhost
+  // 生产环境使用ECS公网IP，本地开发使用localhost
   baseURL: window.location.hostname.includes('modelscope') 
-    ? 'https://your-ecs-ip-or-domain.com/api'  // 替换为你的ECS地址
+    ? 'http://139.224.199.2:3000/api'  // ECS后端地址
     : 'http://localhost:3000/api',
   timeout: 10000
 };
