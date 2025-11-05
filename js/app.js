@@ -20,6 +20,29 @@ const App = {
   },
   
   async loadQuota() {
+    // 检查是否需要重置每日配额
+    const lastResetDate = Utils.storage.get('lastResetDate');
+    const today = new Date().toDateString();
+    
+    // 如果是新的一天，重置配额为20
+    if (lastResetDate !== today) {
+      console.log('新的一天，重置配额为20');
+      this.globalData.remainingQuota = 20;
+      Utils.storage.set('remainingQuota', 20);
+      Utils.storage.set('lastResetDate', today);
+      
+      // 尝试更新服务器端配额
+      const user_id = Utils.storage.get('user_id');
+      if (user_id) {
+        try {
+          await API._request('POST', `/users/${user_id}/reset-quota`);
+        } catch (error) {
+          console.log('服务器重置配额失败，使用本地重置');
+        }
+      }
+      return;
+    }
+    
     // 尝试从服务器获取用户信息
     const user_id = Utils.storage.get('user_id');
     if (user_id) {
@@ -42,6 +65,7 @@ const App = {
     } else {
       this.globalData.remainingQuota = 20;
       Utils.storage.set('remainingQuota', 20);
+      Utils.storage.set('lastResetDate', today);
     }
   },
   

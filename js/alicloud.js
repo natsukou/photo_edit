@@ -6,36 +6,64 @@ const AliCloud = {
   
   // 图片识别风格
   async recognizeStyle(base64Image) {
+    console.log('开始调用阿里云API识别图片风格...');
+    console.log('API Key:', this.apiKey ? this.apiKey.substring(0, 10) + '...' : '未配置');
+    
     try {
+      // 移除base64前缀（如果有）
+      let imageData = base64Image;
+      if (base64Image.startsWith('data:image')) {
+        imageData = base64Image.split(',')[1];
+      }
+      
+      const requestBody = {
+        model: 'qwen-vl-plus',
+        input: {
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { image: imageData },
+                { text: '请识别这张照片的拍摄题材和风格特征，从以下题材中选择一个：人像摄影、风光摄影、建筑摄影、宠物摄影、美食摄影、街拍摄影、产品摄影、静物摄影、花卉摄影、夜景摄影。然后从以下风格中选择一个：日系小清新、复古港风、电影感、胶片风、INS风、暗黑系、高级感、莫兰迪色、赛博朋克、油画质感。请直接回答"题材: XXX, 风格: XXX"的格式。' }
+              ]
+            }
+          ]
+        },
+        parameters: {
+          result_format: 'message'
+        }
+      };
+      
+      console.log('请求体:', JSON.stringify(requestBody).substring(0, 200) + '...');
+      
       const response = await fetch(`${this.baseURL}/services/aigc/multimodal-generation/generation`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          model: 'qwen-vl-plus',
-          input: {
-            messages: [
-              {
-                role: 'user',
-                content: [
-                  { image: base64Image },
-                  { text: '请识别这张照片的拍摄题材和风格特征，从以下题材中选择：人像摄影、风光摄影、建筑摄影、宠物摄影、美食摄影、街拍摄影、产品摄影、静物摄影、花卉摄影、夜景摄影。风格特征包括：日系小清新、复古港风、电影感、胶片风、INS风、暗黑系、高级感、莫兰迪色、赛博朋克、油画质感等。' }
-                ]
-              }
-            ]
-          }
-        })
+        body: JSON.stringify(requestBody)
       });
       
+      console.log('API响应状态:', response.status, response.statusText);
+      
       const data = await response.json();
-      if (data.output && data.output.choices) {
-        return this.parseRecognitionResult(data.output.choices[0].message.content);
+      console.log('API响应数据:', JSON.stringify(data).substring(0, 500));
+      
+      if (data.output && data.output.choices && data.output.choices.length > 0) {
+        const content = data.output.choices[0].message.content;
+        console.log('AI识别结果:', content);
+        return this.parseRecognitionResult(content);
+      } else if (data.code) {
+        console.error('API错误码:', data.code, '错误信息:', data.message);
+        throw new Error(`API错误: ${data.message}`);
       }
-      throw new Error('识别失败');
+      
+      throw new Error('API返回数据格式异常');
     } catch (error) {
       console.error('API调用失败:', error);
+      console.error('错误详情:', error.message);
+      console.error('错误堆栈:', error.stack);
       return null;
     }
   },

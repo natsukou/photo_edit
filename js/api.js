@@ -1,9 +1,20 @@
 // API 基础配置
 const API_CONFIG = {
   // 生产环境使用ECS公网IP，本地开发使用localhost
-  baseURL: window.location.hostname.includes('modelscope') 
-    ? 'http://139.224.199.2:3000/api'  // ECS后端地址
-    : 'http://localhost:3000/api',
+  baseURL: (function() {
+    const hostname = window.location.hostname;
+    console.log('当前域名:', hostname);
+    console.log('是否包含modelscope:', hostname.includes('modelscope'));
+    
+    // ModelScope环境或非localhost环境都使用ECS地址
+    if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname !== 'localhost') {
+      console.log('使用ECS后端地址: http://139.224.199.2:3000/api');
+      return 'http://139.224.199.2:3000/api';
+    }
+    
+    console.log('使用本地后端地址: http://localhost:3000/api');
+    return 'http://localhost:3000/api';
+  })(),
   timeout: 10000
 };
 
