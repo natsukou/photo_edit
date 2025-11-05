@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试阿里云API</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .log {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+    }
+    .success { color: #28a745; }
+    .error { color: #dc3545; }
+    .info { color: #17a2b8; }
+  </style>
+</head>
+<body>
+  <h1>🧪 阿里云AI API 测试工具</h1>
+  
+  <div class="test-section">
+    <h2>1. 测试图片识别API</h2>
+    <p>上传一张图片，测试阿里云通义千问视觉模型的识别能力</p>
+    <input type="file" id="testImage" accept="image/*">
+    <button onclick="testRecognition()">开始测试</button>
+    <div class="log" id="log1"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>2. 测试API Key</h2>
+    <p>检查API Key是否有效</p>
+    <input type="text" id="apiKeyInput" placeholder="sk-xxxxxxxx" style="width: 400px; padding: 8px;">
+    <button onclick="testApiKey()">验证API Key</button>
+    <div class="log" id="log2"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>3. 快速测试</h2>
+    <p>使用示例图片快速测试API连接</p>
+    <button onclick="quickTest()">一键测试</button>
+    <div class="log" id="log3"></div>
+  </div>
+
+  <script src="js/alicloud.js"></script>
+  <script>
+    function log(id, message, type = 'info') {
+      const logEl = document.getElementById(id);
+      const timestamp = new Date().toLocaleTimeString();
+      const className = type;
+      logEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function clearLog(id) {
+      document.getElementById(id).innerHTML = '';
+    }
+
+    async function testRecognition() {
+      clearLog('log1');
+      const fileInput = document.getElementById('testImage');
+      
+      if (!fileInput.files || !fileInput.files[0]) {
+        log('log1', '❌ 请先选择一张图片', 'error');
+        return;
+      }
+      
+      log('log1', '📸 正在读取图片...', 'info');
+      const file = fileInput.files[0];
+      
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Image = e.target.result;
+        log('log1', `✅ 图片读取成功，大小: ${(file.size / 1024).toFixed(2)}KB`, 'success');
+        
+        log('log1', '🚀 开始调用阿里云API...', 'info');
+        log('log1', `API地址: ${AliCloud.baseURL}`, 'info');
+        
+        try {
+          const result = await AliCloud.recognizeStyle(base64Image);
+          
+          if (result) {
+            log('log1', '✅ API调用成功！', 'success');
+            log('log1', `识别结果:`, 'info');
+            log('log1', `  题材: ${result.category}`, 'info');
+            log('log1', `  风格: ${result.style}`, 'info');
+            log('log1', `  置信度: ${result.confidence}%`, 'info');
+          } else {
+            log('log1', '❌ API返回空结果', 'error');
+            log('log1', '请检查浏览器控制台查看详细错误信息', 'error');
+          }
+        } catch (error) {
+          log('log1', `❌ API调用失败: ${error.message}`, 'error');
+          log('log1', error.stack, 'error');
+        }
+      };
+      
+      reader.onerror = () => {
+        log('log1', '❌ 图片读取失败', 'error');
+      };
+      
+      reader.readAsDataURL(file);
+    }
+
+    async function testApiKey() {
+      clearLog('log2');
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      
+      if (!apiKey) {
+        log('log2', '❌ 请输入API Key', 'error');
+        return;
+      }
+      
+      log('log2', `🔑 测试API Key: ${apiKey.substring(0, 10)}...`, 'info');
+      
+      try {
+        const response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'qwen-turbo',
+            input: {
+              messages: [
+                { role: 'user', content: '你好' }
+              ]
+            }
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.output) {
+          log('log2', '✅ API Key 有效！', 'success');
+          log('log2', `模型响应: ${data.output.choices[0].message.content}`, 'info');
+        } else if (data.code) {
+          log('log2', `❌ API Key 无效`, 'error');
+          log('log2', `错误码: ${data.code}`, 'error');
+          log('log2', `错误信息: ${data.message}`, 'error');
+        } else {
+          log('log2', '⚠️  未知响应格式', 'error');
+          log('log2', JSON.stringify(data, null, 2), 'info');
+        }
+      } catch (error) {
+        log('log2', `❌ 网络错误: ${error.message}`, 'error');
+      }
+    }
+
+    async function quickTest() {
+      clearLog('log3');
+      log('log3', '🚀 开始快速测试...', 'info');
+      
+      // 使用一个简单的图片进行测试（1x1px的透明PNG）
+      const testImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      
+      log('log3', '使用测试图片（1x1px）', 'info');
+      log('log3', `API Key: ${AliCloud.apiKey.substring(0, 10)}...`, 'info');
+      log('log3', `API地址: ${AliCloud.baseURL}`, 'info');
+      
+      try {
+        const result = await AliCloud.recognizeStyle(testImage);
+        
+        if (result) {
+          log('log3', '✅ 快速测试成功！API连接正常', 'success');
+          log('log3', `AI响应: 题材=${result.category}, 风格=${result.style}`, 'success');
+        } else {
+          log('log3', '❌ API返回空结果，请检查配置', 'error');
+          log('log3', '提示：打开浏览器控制台(F12)查看详细错误', 'error');
+        }
+      } catch (error) {
+        log('log3', `❌ 测试失败: ${error.message}`, 'error');
+        log('log3', '常见问题：', 'info');
+        log('log3', '1. API Key 是否有效？', 'info');
+        log('log3', '2. 是否有网络连接？', 'info');
+        log('log3', '3. 是否被CORS策略阻止？', 'info');
+      }
+    }
+
+    // 页面加载时显示当前配置
+    window.onload = () => {
+      document.getElementById('apiKeyInput').value = AliCloud.apiKey || '';
+      console.log('阿里云API测试工具已加载');
+      console.log('当前API Key:', AliCloud.apiKey);
+      console.log('当前API地址:', AliCloud.baseURL);
+    };
+  </script>
+</body>
+</html>
