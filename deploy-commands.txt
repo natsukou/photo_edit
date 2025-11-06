@@ -1,0 +1,18 @@
+========================================
+复制以下命令到ECS服务器执行
+========================================
+
+cd /root/photo_advice2 && git pull origin master && cd server && npm install && echo "" >> .env && echo "# 阿里云百炼API配置" >> .env && echo "DASHSCOPE_API_KEY=sk-8bb7317eaf36424580fbfbe2ae3ff037" >> .env && pm2 restart photo-advice-server || pm2 start server.js --name photo-advice-server && pm2 logs photo-advice-server --lines 20
+
+========================================
+如果PM2进程不存在，执行以下命令启动
+========================================
+
+cd /root/photo_advice2/server && pm2 start server.js --name photo-advice-server && pm2 save && pm2 startup
+
+========================================
+部署完成后测试
+========================================
+
+curl http://localhost:3000/api/ai/status
+curl http://localhost:3000/health

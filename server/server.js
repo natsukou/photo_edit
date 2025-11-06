@@ -63,6 +63,10 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// 静态文件服务（提供HTML测试页面）
+const path = require('path');
+app.use(express.static(path.join(__dirname, '..')));
+
 // ============================================
 // 路由注册
 // ============================================
