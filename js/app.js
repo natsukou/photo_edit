@@ -43,29 +43,29 @@ const App = {
       return;
     }
     
-    // 尝试从服务器获取用户信息
+    // 先从本地存储加载配额（避免显示-1）
+    const localQuota = Utils.storage.get('remainingQuota');
+    if (localQuota !== null && localQuota >= 0) {
+      this.globalData.remainingQuota = localQuota;
+    } else {
+      // 首次使用，初始化为20
+      this.globalData.remainingQuota = 20;
+      Utils.storage.set('remainingQuota', 20);
+      Utils.storage.set('lastResetDate', today);
+    }
+    
+    // 尝试从服务器获取用户信息（异步同步）
     const user_id = Utils.storage.get('user_id');
     if (user_id) {
       try {
         const userInfo = await API.getUserInfo(user_id);
-        if (userInfo) {
+        if (userInfo && typeof userInfo.remaining_quota === 'number' && userInfo.remaining_quota >= 0) {
           this.globalData.remainingQuota = userInfo.remaining_quota;
           Utils.storage.set('remainingQuota', userInfo.remaining_quota);
-          return;
         }
       } catch (error) {
         console.log('从服务器获取配额失败，使用本地配额');
       }
-    }
-    
-    // 降级到本地存储
-    const quota = Utils.storage.get('remainingQuota');
-    if (quota !== null) {
-      this.globalData.remainingQuota = quota;
-    } else {
-      this.globalData.remainingQuota = 20;
-      Utils.storage.set('remainingQuota', 20);
-      Utils.storage.set('lastResetDate', today);
     }
   },
   
