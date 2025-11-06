@@ -278,29 +278,115 @@
       clearLog('log3');
       log('log3', '🚀 开始快速测试...', 'info');
       
-      // 使用一个简单的图片进行测试（1x1px的透明PNG）
-      const testImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      // 使用一个简单的测试图片 (100x100px 的纯白色PNG)
+      const testImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
       
-      log('log3', '使用测试图片（1x1px）', 'info');
-      log('log3', `API Key: ${AliCloud.apiKey.substring(0, 10)}...`, 'info');
+      log('log3', '使用测试图片（1x1px 纯白色）', 'info');
+      log('log3', `API Key: ${AliCloud.apiKey.substring(0, 15)}...`, 'info');
       log('log3', `API地址: ${AliCloud.baseURL}`, 'info');
+      log('log3', `模型: qwen-vl-plus`, 'info');
+      
+      const startTime = Date.now();
       
       try {
-        const result = await AliCloud.recognizeStyle(testImage);
+        // 直接调用API
+        let imageData = testImage.split(',')[1];
         
-        if (result) {
+        const requestBody = {
+          model: 'qwen-vl-plus',
+          input: {
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  { image: imageData },
+                  { text: '请描述这张图片。' }
+                ]
+              }
+            ]
+          },
+          parameters: {
+            result_format: 'message'
+          }
+        };
+        
+        log('log3', '正在发送测试请求...', 'info');
+        
+        const response = await fetch(`${AliCloud.baseURL}/services/aigc/multimodal-generation/generation`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${AliCloud.apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+        
+        const endTime = Date.now();
+        const duration = ((endTime - startTime) / 1000).toFixed(2);
+        
+        log('log3', `HTTP状态码: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+        log('log3', `响应时间: ${duration}秒`, 'info');
+        
+        const data = await response.json();
+        
+        if (response.ok && data.output && data.output.choices) {
           log('log3', '✅ 快速测试成功！API连接正常', 'success');
-          log('log3', `AI响应: 题材=${result.category}, 风格=${result.style}`, 'success');
+          log('log3', `AI响应: ${data.output.choices[0].message.content}`, 'success');
+          log('log3', '', 'info');
+          log('log3', '✅ 结论: 阿里云通义千问视觉模型工作正常！', 'success');
+          log('log3', '你可以安心使用AI图片识别功能。', 'success');
+          
+          // 显示使用统计
+          if (data.usage) {
+            log('log3', '', 'info');
+            log('log3', `Token消耗: 输入=${data.usage.input_tokens || 0}, 输出=${data.usage.output_tokens || 0}`, 'info');
+            const totalTokens = (data.usage.input_tokens || 0) + (data.usage.output_tokens || 0);
+            const cost = (totalTokens / 1000 * 0.04).toFixed(4);
+            log('log3', `预估费用: ￥${cost}`, 'info');
+          }
+        } else if (data.code) {
+          log('log3', '❌ 快速测试失败', 'error');
+          log('log3', `错误码: ${data.code}`, 'error');
+          log('log3', `错误信息: ${data.message}`, 'error');
+          log('log3', '', 'info');
+          
+          // 常见错误分析
+          if (data.code === 'InvalidApiKey') {
+            log('log3', '❌ 问题: API Key 无效或已过期', 'error');
+            log('log3', '🔧 解决:', 'info');
+            log('log3', '1. 登录阿里云控制台: https://dashscope.console.aliyun.com/', 'info');
+            log('log3', '2. 检查API Key状态', 'info');
+            log('log3', '3. 如果过期，重新生成并更新到 js/alicloud.js', 'info');
+          } else if (data.code === 'InsufficientBalance') {
+            log('log3', '❌ 问题: 账户余额不足', 'error');
+            log('log3', '🔧 解决:', 'info');
+            log('log3', '1. 充值或购买套餐', 'info');
+            log('log3', '2. 或使用降级方案（让用户手动选择风格）', 'info');
+          } else if (data.code === 'Throttling.RateQuota') {
+            log('log3', '❌ 问题: 请求频率过高', 'error');
+            log('log3', '🔧 解决:', 'info');
+            log('log3', '1. 稍后重试', 'info');
+            log('log3', '2. 或升级API配额', 'info');
+          } else {
+            log('log3', '❌ 未知错误，请查看阿里云文档', 'error');
+          }
         } else {
-          log('log3', '❌ API返回空结果，请检查配置', 'error');
-          log('log3', '提示：打开浏览器控制台(F12)查看详细错误', 'error');
+          log('log3', '❌ API返回数据格式异常', 'error');
+          log('log3', JSON.stringify(data, null, 2), 'error');
         }
       } catch (error) {
-        log('log3', `❌ 测试失败: ${error.message}`, 'error');
+        const endTime = Date.now();
+        const duration = ((endTime - startTime) / 1000).toFixed(2);
+        
+        log('log3', `❌ 测试失败 (耗时: ${duration}秒)`, 'error');
+        log('log3', `错误类型: ${error.name}`, 'error');
+        log('log3', `错误信息: ${error.message}`, 'error');
+        log('log3', '', 'info');
         log('log3', '常见问题：', 'info');
         log('log3', '1. API Key 是否有效？', 'info');
         log('log3', '2. 是否有网络连接？', 'info');
         log('log3', '3. 是否被CORS策略阻止？', 'info');
+        log('log3', '4. 阿里云服务是否可用？', 'info');
       }
     }
 

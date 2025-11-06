@@ -13,6 +13,7 @@ const usersRouter = require('./routes/users');
 const photosRouter = require('./routes/photos');
 const analyticsRouter = require('./routes/analytics');
 const feedbackRouter = require('./routes/feedback');
+const aiRouter = require('./routes/ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -80,6 +81,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/photos', photosRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/feedback', feedbackRouter);
+app.use('/api/ai', aiRouter);
 
 // 404处理
 app.use((req, res) => {
@@ -151,6 +153,10 @@ async function startServer() {
       console.log(`    POST   /api/feedback                 - 创建反馈`);
       console.log(`    GET    /api/feedback/pending         - 获取待处理反馈`);
       console.log(`    PUT    /api/feedback/:feedback_id    - 更新反馈状态`);
+      console.log('');
+      console.log('  AI识别服务:');
+      console.log(`    POST   /api/ai/recognize             - 图片风格识别`);
+      console.log(`    GET    /api/ai/status                - AI服务状态`);
       console.log('');
       console.log('═══════════════════════════════════════════════');
     });
