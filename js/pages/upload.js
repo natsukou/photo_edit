@@ -112,14 +112,19 @@ const UploadPage = {
     document.getElementById('loadingSection').classList.remove('hidden');
     
     try {
-      // 调用阿里云AI识别图片风格
-      const result = await AliCloud.recognizeStyle(this.imageUrl);
+      // 调用后端代理API识别图片风格
+      console.log('开始调用AI识别接口...');
+      const response = await API._request('POST', '/ai/recognize', {
+        image: this.imageUrl
+      });
       
-      if (result) {
+      if (response.code === 0 && response.data) {
+        const result = response.data;
+        
         // 保存AI识别结果
         App.globalData.aiRecognizedCategory = result.category;
         App.globalData.aiRecognizedStyle = result.style;
-        App.globalData.aiConfidence = result.confidence;
+        App.globalData.aiConfidence = result.confidence || 85;
         
         console.log('AI识别成功:', result);
         
