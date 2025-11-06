@@ -3,12 +3,18 @@ const API_CONFIG = {
   // 生产环境使用ECS公网IP，本地开发使用localhost
   baseURL: (function() {
     const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    
     console.log('当前域名:', hostname);
+    console.log('当前协议:', protocol);
     console.log('是否包含modelscope:', hostname.includes('modelscope'));
     
     // ModelScope环境或非localhost环境都使用ECS地址
-    if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname !== 'localhost') {
-      console.log('使用ECS后端地址: http://139.224.199.2:3000/api');
+    if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname.includes('.ms.show') || hostname !== 'localhost') {
+      // 注意：ModelScope使用HTTPS，但ECS后端是HTTP，会被浏览器阻止
+      // 临时解决方案：使用降级到本地存储
+      console.warn('⚠️  HTTPS环境下调用HTTP API会被阻止，使用本地存储模式');
+      console.log('使用ECS后端地址: http://139.224.199.2:3000/api (可能被阻止)');
       return 'http://139.224.199.2:3000/api';
     }
     

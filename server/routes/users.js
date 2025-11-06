@@ -127,4 +127,37 @@ router.post('/:user_id/consume-quota', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/users/:user_id/reset-quota
+ * 重置每日配额
+ */
+router.post('/:user_id/reset-quota', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    
+    // 重置配额为0
+    const sql = 'UPDATE users SET used_quota = 0 WHERE user_id = ?';
+    await require('../config/database').pool.execute(sql, [user_id]);
+    
+    // 获取更新后的用户信息
+    const user = await User.getById(user_id);
+
+    res.json({
+      code: 0,
+      message: 'success',
+      data: {
+        used_quota: user.used_quota,
+        remaining_quota: user.total_quota - user.used_quota
+      }
+    });
+  } catch (error) {
+    console.error('重置配额失败:', error);
+    res.status(500).json({
+      code: -1,
+      message: '服务器错误',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

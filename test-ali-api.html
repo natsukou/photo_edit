@@ -96,31 +96,128 @@
       
       log('log1', '📸 正在读取图片...', 'info');
       const file = fileInput.files[0];
+      log('log1', `文件名: ${file.name}, 大小: ${(file.size / 1024).toFixed(2)}KB`, 'info');
       
       const reader = new FileReader();
       reader.onload = async (e) => {
         const base64Image = e.target.result;
         log('log1', `✅ 图片读取成功，大小: ${(file.size / 1024).toFixed(2)}KB`, 'success');
+        log('log1', `Base64长度: ${base64Image.length} 字符`, 'info');
         
         log('log1', '🚀 开始调用阿里云API...', 'info');
         log('log1', `API地址: ${AliCloud.baseURL}`, 'info');
+        log('log1', `API Key: ${AliCloud.apiKey.substring(0, 15)}...`, 'info');
+        log('log1', `模型: qwen-vl-plus`, 'info');
+        
+        const startTime = Date.now();
         
         try {
-          const result = await AliCloud.recognizeStyle(base64Image);
+          // 直接调用API，不使用AliCloud封装，以便获取详细错误
+          log('log1', '正在发送请求...', 'info');
           
-          if (result) {
+          // 移除base64前缀
+          let imageData = base64Image;
+          if (base64Image.startsWith('data:image')) {
+            imageData = base64Image.split(',')[1];
+            log('log1', `已移除Base64前缀，剩余长度: ${imageData.length}`, 'info');
+          }
+          
+          const requestBody = {
+            model: 'qwen-vl-plus',
+            input: {
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    { image: imageData },
+                    { text: '请识别这张照片的拍摄题材和风格特征，从以下题材中选择一个：人像摄影、风光摄影、建筑摄影、宠物摄影、美食摄影、街拍摄影、产品摄影、静物摄影、花卉摄影、夜景摄影。然后从以下风格中选择一个：日系小清新、复古港风、电影感、胶片风、INS风、暗黑系、高级感、莫兰迪色、赛博朋克、油画质感。请直接回答"题材: XXX, 风格: XXX"的格式。' }
+                  ]
+                }
+              ]
+            },
+            parameters: {
+              result_format: 'message'
+            }
+          };
+          
+          log('log1', `请求体大小: ${JSON.stringify(requestBody).length} 字节`, 'info');
+          
+          const response = await fetch(`${AliCloud.baseURL}/services/aigc/multimodal-generation/generation`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${AliCloud.apiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+          });
+          
+          const endTime = Date.now();
+          const duration = ((endTime - startTime) / 1000).toFixed(2);
+          
+          log('log1', `API响应状态: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+          log('log1', `响应时间: ${duration}秒`, 'info');
+          
+          const data = await response.json();
+          log('log1', `响应数据: ${JSON.stringify(data).substring(0, 200)}...`, 'info');
+          
+          if (response.ok && data.output && data.output.choices && data.output.choices.length > 0) {
+            const content = data.output.choices[0].message.content;
             log('log1', '✅ API调用成功！', 'success');
-            log('log1', `识别结果:`, 'info');
-            log('log1', `  题材: ${result.category}`, 'info');
-            log('log1', `  风格: ${result.style}`, 'info');
-            log('log1', `  置信度: ${result.confidence}%`, 'info');
+            log('log1', `AI识别结果: ${content}`, 'success');
+            
+            // 解析结果
+            const categories = ['人像摄影', '风光摄影', '建筑摄影', '宠物摄影', '美食摄影', '街拍摄影', '产品摄影', '静物摄影', '花卉摄影', '夜景摄影'];
+            const styles = ['日系小清新', '复古港风', '电影感', '胶片风', 'INS风', '暗黑系', '高级感', '莫兰迪色', '赛博朋克', '油画质感'];
+            
+            let category = '未识别';
+            let style = '未识别';
+            
+            categories.forEach(cat => {
+              if (content.includes(cat)) category = cat;
+            });
+            
+            styles.forEach(sty => {
+              if (content.includes(sty)) style = sty;
+            });
+            
+            log('log1', `解析结果: 题材=${category}, 风格=${style}`, 'success');
+            
+            // 费用估算
+            const estimatedCost = (imageData.length / 1000 * 0.04 / 1000).toFixed(4);
+            log('log1', `估计费用: ￥${estimatedCost} (按￥0.04/千tokens计算)`, 'info');
+            
+          } else if (data.code) {
+            log('log1', `❌ API错误`, 'error');
+            log('log1', `错误码: ${data.code}`, 'error');
+            log('log1', `错误信息: ${data.message}`, 'error');
+            
+            // 常见错误分析
+            if (data.code === 'InvalidApiKey') {
+              log('log1', '原因: API Key 无效或已过期', 'error');
+              log('log1', '解决: 登录阿里云控制台检查API Key状态', 'info');
+            } else if (data.code === 'InsufficientBalance') {
+              log('log1', '原因: 账户余额不足', 'error');
+              log('log1', '解决: 充值或升级套餐', 'info');
+            } else if (data.code === 'Throttling.RateQuota') {
+              log('log1', '原因: 请求频率过高', 'error');
+              log('log1', '解决: 稍后重试或升级配额', 'info');
+            }
           } else {
-            log('log1', '❌ API返回空结果', 'error');
-            log('log1', '请检查浏览器控制台查看详细错误信息', 'error');
+            log('log1', '❌ API返回数据格式异常', 'error');
+            log('log1', JSON.stringify(data, null, 2), 'error');
           }
         } catch (error) {
-          log('log1', `❌ API调用失败: ${error.message}`, 'error');
-          log('log1', error.stack, 'error');
+          const endTime = Date.now();
+          const duration = ((endTime - startTime) / 1000).toFixed(2);
+          
+          log('log1', `❌ API调用失败 (耗时: ${duration}秒)`, 'error');
+          log('log1', `错误类型: ${error.name}`, 'error');
+          log('log1', `错误信息: ${error.message}`, 'error');
+          
+          if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            log('log1', '原因: 网络连接失败或CORS问题', 'error');
+            log('log1', '解决: 检查网络连接，或在后端配置CORS', 'info');
+          }
         }
       };
       

@@ -15,8 +15,8 @@ class User {
     } = userData;
 
     const sql = `
-      INSERT INTO users (user_id, openid, nickname, avatar_url, source, device_info, last_login_time)
-      VALUES (?, ?, ?, ?, ?, ?, NOW())
+      INSERT INTO users (user_id, openid, nickname, avatar_url, source, device_info, total_quota, used_quota, last_login_time)
+      VALUES (?, ?, ?, ?, ?, ?, 50, 0, NOW())
       ON DUPLICATE KEY UPDATE
         nickname = VALUES(nickname),
         avatar_url = VALUES(avatar_url),
@@ -27,11 +27,11 @@ class User {
     try {
       const [result] = await pool.execute(sql, [
         user_id,
-        openid,
-        nickname,
-        avatar_url,
+        openid || null,
+        nickname || '游客',
+        avatar_url || '',
         source,
-        JSON.stringify(device_info)
+        device_info ? JSON.stringify(device_info) : null
       ]);
       return { success: true, user_id };
     } catch (error) {
