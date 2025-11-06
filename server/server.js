@@ -63,10 +63,6 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// 静态文件服务（提供HTML测试页面）
-const path = require('path');
-app.use(express.static(path.join(__dirname, '..')));
-
 // ============================================
 // 路由注册
 // ============================================
@@ -87,8 +83,12 @@ app.use('/api/analytics', analyticsRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/ai', aiRouter);
 
-// 404处理
-app.use((req, res) => {
+// 静态文件服务（必须在404之前）
+const path = require('path');
+app.use(express.static(path.join(__dirname, '..')));
+
+// 404处理（只处理API请求）
+app.use('/api/*', (req, res) => {
   res.status(404).json({
     code: -1,
     message: '接口不存在',
