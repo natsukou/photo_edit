@@ -101,11 +101,32 @@ const App = {
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('App初始化...');
   
+  // 首先检查并修复配额
+  const currentQuota = Utils.storage.get('remainingQuota');
+  const today = new Date().toDateString();
+  const lastResetDate = Utils.storage.get('lastResetDate');
+  
+  console.log('当前本地配额:', currentQuota);
+  console.log('上次重置日期:', lastResetDate);
+  console.log('今日日期:', today);
+  
+  // 如果配额异常或未初始化，立即重置为20
+  if (currentQuota === null || currentQuota === undefined || currentQuota < 0) {
+    console.warn('配额异常，重置为20');
+    App.globalData.remainingQuota = 20;
+    Utils.storage.set('remainingQuota', 20);
+    Utils.storage.set('lastResetDate', today);
+  } else {
+    App.globalData.remainingQuota = currentQuota;
+  }
+  
   // 初始化用户
   await App.initUser();
   
-  // 加载配额
+  // 加载配额（尝试从服务器同步）
   await App.loadQuota();
+  
+  console.log('最终配额:', App.globalData.remainingQuota);
   
   // 注册路由
   Router.register('index', IndexPage.render);

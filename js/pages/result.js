@@ -20,9 +20,32 @@ const ResultPage = {
     const sampleUrl = SampleImages.getSampleImage(category, style.split(' ')[0]);
     console.log('sampleUrl:', sampleUrl);
     
-    // 获取AI建议
-    const advice = AdviceGenerator.getAdvice(category, style);
-    console.log('生成的建议:', advice);
+    // 尝试调用AI生成建议（如果失败则使用本地mock）
+    let advice;
+    try {
+      console.log('尝试调用AI生成建议...');
+      const aiAdvice = await AliCloud.generateAdvice(category, style, imageUrl);
+      if (aiAdvice && aiAdvice.length > 0) {
+        console.log('AI建议生成成功:', aiAdvice);
+        // 将AI返回的数组格式转换为对象格式
+        advice = {
+          composition: aiAdvice[0]?.description || AdviceGenerator.getCompositionAdvice(category, style),
+          lighting: aiAdvice[1]?.description || AdviceGenerator.getLightingAdvice(category, style),
+          angle: aiAdvice[2]?.description || AdviceGenerator.getAngleAdvice(category, style),
+          postProcessing: AdviceGenerator.getPostProcessingAdvice(category, style),
+          props: AdviceGenerator.getPropsAdvice(category, style),
+          tips: AdviceGenerator.getTipsAdvice(category, style)
+        };
+      } else {
+        console.warn('AI返回为空，使用本地mock建议');
+        advice = AdviceGenerator.getAdvice(category, style);
+      }
+    } catch (error) {
+      console.error('AI生成建议失败，使用本地mock建议:', error);
+      advice = AdviceGenerator.getAdvice(category, style);
+    }
+    
+    console.log('最终使用的建议:', advice);
     
     // 消费配额
     await App.consumeQuota();
