@@ -30,6 +30,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@serverless-devs/s": "^3.1.10",
     "nodemon": "^3.0.1"
   }
 }

@@ -185,4 +185,96 @@ router.get('/status', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/ai/advice
+ * 生成拍摄建议（代理阿里云通义千问文本模型）
+ */
+router.post('/advice', async (req, res) => {
+  try {
+    const { category, style, imageUrl } = req.body;
+
+    if (!category || !style) {
+      return res.status(400).json({
+        code: -1,
+        message: '缺少题材或风格参数'
+      });
+    }
+
+    console.log('收到AI建议请求:', category, style);
+
+    const prompt = `你是一位专业摄影师。用户拍摄了一张${category}，想要${style}风格的效果。请提供5条简洁实用的拍摄建议，每条建议不超过25字。直接返回建议列表，格式为：1. XXX
+2. XXX
+3. XXX
+4. XXX
+5. XXX`;
+
+    const requestBody = {
+      model: 'qwen-turbo',
+      input: {
+        messages: [
+          { role: 'user', content: prompt }
+        ]
+      },
+      parameters: {
+        result_format: 'message'
+      }
+    };
+
+    console.log('调用阿里云AI生成建议...');
+    const startTime = Date.now();
+
+    const response = await fetch(`${DASHSCOPE_BASE_URL}/services/aigc/text-generation/generation`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody),
+      timeout: 30000
+    });
+
+    const duration = Date.now() - startTime;
+    const data = await response.json();
+
+    if (response.ok && data.output && data.output.choices) {
+      const content = data.output.choices[0].message.content;
+      console.log('AI建议生成成功:', content.substring(0, 100));
+
+      // 解析建议列表
+      const adviceList = content.split('\n')
+        .filter(line => line.trim())
+        .map(line => line.replace(/^\d+\.\s*/, '').trim())
+        .filter(line => line.length > 0)
+        .slice(0, 5);
+
+      if (data.usage) {
+        const totalTokens = (data.usage.input_tokens || 0) + (data.usage.output_tokens || 0);
+        const cost = (totalTokens / 1000 * 0.008).toFixed(4);
+        console.log(`Token消耗: ${totalTokens}, 预估费用: ¥${cost}`);
+      }
+
+      res.json({
+        code: 0,
+        message: 'success',
+        data: adviceList,
+        duration_ms: duration
+      });
+    } else {
+      console.error('阿里云API错误:', data);
+      res.status(500).json({
+        code: -1,
+        message: 'AI生成建议失败',
+        error: data.message
+      });
+    }
+  } catch (error) {
+    console.error('AI生成建议错误:', error);
+    res.status(500).json({
+      code: -1,
+      message: '服务器错误',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

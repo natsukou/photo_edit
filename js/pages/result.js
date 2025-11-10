@@ -20,20 +20,25 @@ const ResultPage = {
     const sampleUrl = SampleImages.getSampleImage(category, style.split(' ')[0]);
     console.log('sampleUrl:', sampleUrl);
     
-    // 尝试调用AI生成建议（如果失败则使用本地mock）
+    // 调用后端AI代理生成建议
     let advice;
     try {
       console.log('尝试调用AI生成建议...');
-      const aiAdvice = await AliCloud.generateAdvice(category, style, imageUrl);
-      if (aiAdvice && aiAdvice.length > 0) {
-        console.log('AI建议生成成功:', aiAdvice);
+      const response = await API._request('POST', '/ai/advice', {
+        category: category,
+        style: style,
+        imageUrl: imageUrl
+      });
+      
+      if (response.code === 0 && response.data && response.data.length >= 3) {
+        console.log('AI建议生成成功:', response.data);
         // 将AI返回的数组格式转换为对象格式
         advice = {
-          composition: aiAdvice[0]?.description || AdviceGenerator.getCompositionAdvice(category, style),
-          lighting: aiAdvice[1]?.description || AdviceGenerator.getLightingAdvice(category, style),
-          angle: aiAdvice[2]?.description || AdviceGenerator.getAngleAdvice(category, style),
-          postProcessing: AdviceGenerator.getPostProcessingAdvice(category, style),
-          props: AdviceGenerator.getPropsAdvice(category, style),
+          composition: response.data[0] || AdviceGenerator.getCompositionAdvice(category, style),
+          lighting: response.data[1] || AdviceGenerator.getLightingAdvice(category, style),
+          angle: response.data[2] || AdviceGenerator.getAngleAdvice(category, style),
+          postProcessing: response.data[3] || AdviceGenerator.getPostProcessingAdvice(category, style),
+          props: response.data[4] || AdviceGenerator.getPropsAdvice(category, style),
           tips: AdviceGenerator.getTipsAdvice(category, style)
         };
       } else {
