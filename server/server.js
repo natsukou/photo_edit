@@ -160,6 +160,7 @@ async function startServer() {
       console.log('');
       console.log('  AI识别服务:');
       console.log(`    POST   /api/ai/recognize             - 图片风格识别`);
+      console.log(`    POST   /api/ai/advice               - AI生成拍摄建议`);
       console.log(`    GET    /api/ai/status                - AI服务状态`);
       console.log('');
       console.log('═══════════════════════════════════════════════');
