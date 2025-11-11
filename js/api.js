@@ -24,7 +24,16 @@ const API_CONFIG = {
     console.log('使用本地后端地址: http://localhost:3000/api');
     return 'http://localhost:3000/api';
   })(),
-  timeout: 30000  // 增加超时时间到30秒，因为AI识别需要较长时间
+  timeout: 30000,  // 增加超时时间到30秒，因为AI识别需要较长时间
+  
+  // 阿里云APP认证配置（如果需要签名）
+  aliyunApp: {
+    // ⚠️ 安全提示：生产环境请将AppKey和AppSecret存储在服务器端
+    // 这里仅为演示，实际应该由后端API代理签名
+    enabled: false,  // 是否启用签名（默认关闭，改为true启用）
+    appKey: 'YOUR_APP_KEY',  // 替换为您的AppKey
+    appSecret: 'YOUR_APP_SECRET'  // 替换为您的AppSecret
+  }
 };
 
 // API 工具类
@@ -279,7 +288,7 @@ const API = {
    * 发送HTTP请求
    */
   async _request(method, url, data = null) {
-    const fullUrl = `${API_CONFIG.baseURL}${url}`;
+    let fullUrl = `${API_CONFIG.baseURL}${url}`;
     const options = {
       method,
       headers: {
@@ -287,12 +296,43 @@ const API = {
       }
     };
 
+    let bodyString = '';
     if (data) {
       if (method === 'GET') {
         const params = new URLSearchParams(data);
         fullUrl = `${fullUrl}?${params}`;
       } else {
-        options.body = JSON.stringify(data);
+        bodyString = JSON.stringify(data);
+        options.body = bodyString;
+      }
+    }
+
+    // 如果启用阿里云APP认证，添加签名请求头
+    if (API_CONFIG.aliyunApp.enabled) {
+      try {
+        // 检查是否加载了签名工具
+        if (typeof APISignature === 'undefined') {
+          console.warn('⚠️ 未加载API签名工具，请在index.html中引入api-signature.js');
+        } else {
+          const signer = new APISignature(
+            API_CONFIG.aliyunApp.appKey,
+            API_CONFIG.aliyunApp.appSecret
+          );
+          
+          // 生成签名并添加到请求头
+          const path = url;  // 不包含baseURL的路径
+          const signedHeaders = signer.sign(
+            method,
+            path,
+            options.headers,
+            {},  // query参数
+            bodyString
+          );
+          options.headers = signedHeaders;
+          console.log('✅ 已添加阿里云APP签名');
+        }
+      } catch (error) {
+        console.error('签名失败:', error);
       }
     }
 
