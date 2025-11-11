@@ -1,10 +1,65 @@
 const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
+const APISignature = require('../utils/api-signature');
 
 // 阿里云百炼API配置
 const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY || 'sk-8bb7317eaf36424580fbfbe2ae3ff037';
 const DASHSCOPE_BASE_URL = 'https://dashscope.aliyuncs.com/api/v1';
+
+// API网关配置
+const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'https://b6cb40828efb4332baaef3da54b96514-cn-shanghai.alicloudapi.com';
+const ALIYUN_APP_KEY = process.env.ALIYUN_APP_KEY || '112266072';
+const ALIYUN_APP_SECRET = process.env.ALIYUN_APP_SECRET || 'Kn5eYBngioFH8a5Pz4XApnMQ3ls62GV4';
+
+// 判断是否使用API网关
+const USE_API_GATEWAY = process.env.USE_API_GATEWAY === 'true' || false;
+
+/**
+ * 调用API网关（带签名）
+ */
+async function callAPIGateway(path, method, body) {
+  const signer = new APISignature(ALIYUN_APP_KEY, ALIYUN_APP_SECRET);
+  const bodyString = JSON.stringify(body);
+  
+  // 生成签名头
+  const headers = signer.sign(
+    method,
+    path,
+    { 'Content-Type': 'application/json' },
+    {},
+    bodyString
+  );
+  
+  console.log('✅ 已生成API网关签名');
+  
+  // 调用API网关
+  const response = await fetch(`${API_GATEWAY_URL}${path}`, {
+    method,
+    headers,
+    body: bodyString,
+    timeout: 30000
+  });
+  
+  return response;
+}
+
+/**
+ * 直接调用阿里云API
+ */
+async function callDashScopeAPI(endpoint, body) {
+  const response = await fetch(`${DASHSCOPE_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body),
+    timeout: 30000
+  });
+  
+  return response;
+}
 
 /**
  * POST /api/ai/recognize
@@ -53,15 +108,14 @@ router.post('/recognize', async (req, res) => {
     console.log('调用阿里云API...');
     const startTime = Date.now();
 
-    const response = await fetch(`${DASHSCOPE_BASE_URL}/services/aigc/multimodal-generation/generation`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody),
-      timeout: 30000 // 30秒超时
-    });
+    let response;
+    if (USE_API_GATEWAY) {
+      console.log('🔒 使用API网关模式（带签名）');
+      response = await callAPIGateway('/api/ai/recognize', 'POST', requestBody);
+    } else {
+      console.log('🔓 直接调用阿里云API（无签名）');
+      response = await callDashScopeAPI('/services/aigc/multimodal-generation/generation', requestBody);
+    }
 
     const duration = Date.now() - startTime;
     console.log(`API响应时间: ${duration}ms, 状态码: ${response.status}`);
@@ -223,15 +277,14 @@ router.post('/advice', async (req, res) => {
     console.log('调用阿里云AI生成建议...');
     const startTime = Date.now();
 
-    const response = await fetch(`${DASHSCOPE_BASE_URL}/services/aigc/text-generation/generation`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody),
-      timeout: 30000
-    });
+    let response;
+    if (USE_API_GATEWAY) {
+      console.log('🔒 使用API网关模式（带签名）');
+      response = await callAPIGateway('/api/ai/advice', 'POST', requestBody);
+    } else {
+      console.log('🔓 直接调用阿里云API（无签名）');
+      response = await callDashScopeAPI('/services/aigc/text-generation/generation', requestBody);
+    }
 
     const duration = Date.now() - startTime;
     const data = await response.json();

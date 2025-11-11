@@ -28,11 +28,11 @@ const API_CONFIG = {
   
   // 阿里云APP认证配置（如果需要签名）
   aliyunApp: {
-    // ⚠️ 安全提示：生产环境请将AppKey和AppSecret存储在服务器端
-    // 这里仅为演示，实际应该由后端API代理签名
-    enabled: true,  // 已启用APP签名认证
-    appKey: '112266072',  // 您的AppKey
-    appSecret: 'Kn5eYBngioFH8a5Pz4XApnMQ3ls62GV4'  // AppSecret
+    // ⚠️ 签名逻辑已移至后端，前端无需配置AppSecret
+    // 后端会在转发请求时自动添加签名
+    enabled: false,  // 前端关闭签名，由后端处理
+    appKey: '112266072',
+    appSecret: ''  // 已移至后端环境变量
   }
 };
 
