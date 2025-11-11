@@ -1,6 +1,6 @@
 // API 基础配置
 const API_CONFIG = {
-  // 生产环境使用ECS公网IP，本地开发使用localhost
+  // 生产环境使用API网关HTTPS地址，本地开发使用localhost
   baseURL: (function() {
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
@@ -9,19 +9,22 @@ const API_CONFIG = {
     console.log('当前协议:', protocol);
     console.log('是否包含modelscope:', hostname.includes('modelscope'));
     
-    // ModelScope环境或非localhost环境都使用ECS地址
-    if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname.includes('.ms.show') || hostname !== 'localhost') {
-      // 注意：ModelScope使用HTTPS，但ECS后端是HTTP，会被浏览器阻止
-      // 临时解决方案：使用降级到本地存储
-      console.warn('⚠️  HTTPS环境下调用HTTP API会被阻止，使用本地存储模式');
-      console.log('使用ECS后端地址: http://139.224.199.2:3000/api (可能被阻止)');
+    // ModelScope环境使用阿里云API网关HTTPS地址
+    if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname.includes('.ms.show')) {
+      console.log('✅ 使用API网关HTTPS地址');
+      return 'https://b6cb40828efb4332baaef3da54b96514-cn-shanghai.alicloudapi.com/api';
+    }
+    
+    // 非localhost环境使用ECS HTTP地址（如其他测试环境）
+    if (hostname !== 'localhost') {
+      console.log('使用ECS后端地址: http://139.224.199.2:3000/api');
       return 'http://139.224.199.2:3000/api';
     }
     
     console.log('使用本地后端地址: http://localhost:3000/api');
     return 'http://localhost:3000/api';
   })(),
-  timeout: 10000
+  timeout: 30000  // 增加超时时间到30秒，因为AI识别需要较长时间
 };
 
 // API 工具类
