@@ -32,7 +32,7 @@ const API_CONFIG = {
     // 这里仅为演示，实际应该由后端API代理签名
     enabled: true,  // 已启用APP签名认证
     appKey: '112266072',  // 您的AppKey
-    appSecret: 'PLEASE_REPLACE_WITH_YOUR_APP_SECRET'  // ⚠️ 请替换为您的AppSecret
+    appSecret: 'Kn5eYBngioFH8a5Pz4XApnMQ3ls62GV4'  // AppSecret
   }
 };
 
