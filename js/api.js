@@ -30,9 +30,9 @@ const API_CONFIG = {
   aliyunApp: {
     // ⚠️ 安全提示：生产环境请将AppKey和AppSecret存储在服务器端
     // 这里仅为演示，实际应该由后端API代理签名
-    enabled: false,  // 是否启用签名（默认关闭，改为true启用）
-    appKey: 'YOUR_APP_KEY',  // 替换为您的AppKey
-    appSecret: 'YOUR_APP_SECRET'  // 替换为您的AppSecret
+    enabled: true,  // 已启用APP签名认证
+    appKey: '112266072',  // 您的AppKey
+    appSecret: 'PLEASE_REPLACE_WITH_YOUR_APP_SECRET'  // ⚠️ 请替换为您的AppSecret
   }
 };
 
