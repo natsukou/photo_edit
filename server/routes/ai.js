@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
+const sharp = require('sharp');
 const APISignature = require('../utils/api-signature');
 
 // 阿里云百炼API配置
@@ -15,12 +16,70 @@ const ALIYUN_APP_SECRET = process.env.ALIYUN_APP_SECRET || 'Kn5eYBngioFH8a5Pz4XA
 // 判断是否使用API网关
 const USE_API_GATEWAY = process.env.USE_API_GATEWAY === 'true' || false;
 
+console.log('🔧 AI路由配置:');
+console.log('  USE_API_GATEWAY:', USE_API_GATEWAY);
+console.log('  API_GATEWAY_URL:', API_GATEWAY_URL);
+console.log('  ALIYUN_APP_KEY:', ALIYUN_APP_KEY);
+console.log('  DASHSCOPE_API_KEY:', DASHSCOPE_API_KEY ? DASHSCOPE_API_KEY.substring(0, 10) + '...' : 'undefined');
+
+/**
+ * 压缩图片以满足API限制（20MB base64）
+ */
+async function compressImage(base64Data) {
+  try {
+    // 移除data URL前缀
+    let base64String = base64Data;
+    if (base64Data.startsWith('data:')) {
+      base64String = base64Data.split(',')[1];
+    }
+    
+    // 转换为Buffer
+    const imageBuffer = Buffer.from(base64String, 'base64');
+    console.log('原始图片大小:', imageBuffer.length, 'bytes');
+    
+    // 使用sharp压缩图片，限制在800px宽度，质量80%
+    const compressedBuffer = await sharp(imageBuffer)
+      .resize({ width: 800, withoutEnlargement: true })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+    
+    console.log('压缩后图片大小:', compressedBuffer.length, 'bytes');
+    
+    // 转换为base64
+    const compressedBase64 = compressedBuffer.toString('base64');
+    const dataUrl = `data:image/jpeg;base64,${compressedBase64}`;
+    
+    // 检查是否超过阿里云限制（20MB）
+    if (dataUrl.length > 20000000) {
+      console.warn('⚠️ 压缩后仍然超过限制，尝试更大的压缩比例');
+      // 更激进的压缩
+      const moreCompressed = await sharp(imageBuffer)
+        .resize({ width: 600, withoutEnlargement: true })
+        .jpeg({ quality: 60 })
+        .toBuffer();
+      console.log('二次压缩后大小:', moreCompressed.length, 'bytes');
+      return `data:image/jpeg;base64,${moreCompressed.toString('base64')}`;
+    }
+    
+    return dataUrl;
+  } catch (error) {
+    console.error('图片压缩失败:', error);
+    throw error;
+  }
+}
+
 /**
  * 调用API网关（带签名）
  */
 async function callAPIGateway(path, method, body) {
   const signer = new APISignature(ALIYUN_APP_KEY, ALIYUN_APP_SECRET);
   const bodyString = JSON.stringify(body);
+  
+  console.log('🔑 API网关调用信息:');
+  console.log('  路径:', path);
+  console.log('  方法:', method);
+  console.log('  AppKey:', ALIYUN_APP_KEY);
+  console.log('  AppSecret:', ALIYUN_APP_SECRET ? ALIYUN_APP_SECRET.substring(0, 10) + '...' : 'undefined');
   
   // 生成签名头
   const headers = signer.sign(
@@ -32,14 +91,21 @@ async function callAPIGateway(path, method, body) {
   );
   
   console.log('✅ 已生成API网关签名');
+  console.log('  请求头:', JSON.stringify(headers, null, 2));
   
   // 调用API网关
-  const response = await fetch(`${API_GATEWAY_URL}${path}`, {
+  const fullUrl = `${API_GATEWAY_URL}${path}`;
+  console.log('  完整URL:', fullUrl);
+  
+  const response = await fetch(fullUrl, {
     method,
     headers,
     body: bodyString,
     timeout: 30000
   });
+  
+  console.log('  响应状态码:', response.status);
+  console.log('  响应头:', JSON.stringify([...response.headers.entries()], null, 2));
   
   return response;
 }
@@ -78,10 +144,20 @@ router.post('/recognize', async (req, res) => {
 
     console.log('收到AI识别请求，图片大小:', image.length, '字符');
 
+    // 压缩图片以满足API限制
+    console.log('📊 开始压缩图片...');
+    const compressedImage = await compressImage(image);
+    console.log('✅ 图片压缩完成，压缩后大小:', compressedImage.length, '字符');
+
     // 移除base64前缀（如果有）
-    let imageData = image;
+    let imageData = compressedImage;
     if (image.startsWith('data:image')) {
-      imageData = image.split(',')[1];
+      // 保留完整的data URL格式，因为通义千问VL支持这种格式
+      imageData = image;
+      console.log('检测到data URL格式，保持原格式');
+    } else {
+      console.log('纯base64格式，添加data URL前缀');
+      imageData = `data:image/jpeg;base64,${image}`;
     }
 
     // 调用阿里云API
@@ -106,6 +182,13 @@ router.post('/recognize', async (req, res) => {
     };
 
     console.log('调用阿里云API...');
+    console.log('请求体预览:', {
+      model: requestBody.model,
+      messages_count: requestBody.input.messages.length,
+      content_items: requestBody.input.messages[0].content.length,
+      image_format: imageData.startsWith('data:') ? 'data URL' : 'unknown',
+      image_length: imageData.length
+    });
     const startTime = Date.now();
 
     let response;
@@ -119,8 +202,18 @@ router.post('/recognize', async (req, res) => {
 
     const duration = Date.now() - startTime;
     console.log(`API响应时间: ${duration}ms, 状态码: ${response.status}`);
-
-    const data = await response.json();
+    
+    // 读取响应数据
+    let data;
+    const responseText = await response.text();
+    console.log('响应文本:', responseText.substring(0, 500));
+    
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('响应解析失败:', parseError);
+      throw new Error('响应格式无效: ' + responseText.substring(0, 200));
+    }
 
     if (response.ok && data.output && data.output.choices && data.output.choices.length > 0) {
       const content = data.output.choices[0].message.content;
@@ -163,10 +256,17 @@ router.post('/recognize', async (req, res) => {
     }
   } catch (error) {
     console.error('AI识别错误:', error);
+    console.error('错误堆栈:', error.stack);
+    console.error('错误详情:', {
+      name: error.name,
+      message: error.message,
+      code: error.code
+    });
     res.status(500).json({
       code: -1,
-      message: '服务器错误',
-      error: error.message
+      message: '服务器错误: ' + error.message,
+      error: error.message,
+      error_stack: error.stack
     });
   }
 });

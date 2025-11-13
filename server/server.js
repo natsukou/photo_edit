@@ -23,7 +23,22 @@ const PORT = process.env.PORT || 3000;
 // ============================================
 
 // 安全相关
-app.use(helmet());
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet());
+} else {
+  // 开发环境放宽CSP限制，允许内联脚本和事件处理器
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'unsafe-inline'"],  // 允许onclick等内联事件
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:"]
+      }
+    }
+  }));
+}
 
 // CORS配置
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
@@ -35,18 +50,32 @@ app.use(cors({
     // 允许没有origin的请求（如移动端、Postman等）
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    // 检查是否在允许列表中
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
     }
+    
+    // 允许开发环境
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    // 允许ModelScope域名（*.modelscope.cn 和 *.ms.show）
+    if (origin.includes('modelscope.cn') || origin.includes('.ms.show') || origin.includes('dsw-')) {
+      return callback(null, true);
+    }
+    
+    // 其他情况拒绝
+    callback(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Ca-Key', 'X-Ca-Signature', 'X-Ca-Timestamp', 'X-Ca-Nonce', 'X-Ca-Signature-Method']
 }));
 
-// 请求体解析
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+// 请求体解析（增加到50MB以支持大图片）
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
 // 日志
 if (process.env.NODE_ENV !== 'production') {

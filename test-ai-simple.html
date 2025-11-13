@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI接口测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .test-section {
+      background: white;
+      padding: 25px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h3 {
+      color: #666;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #4CAF50;
+      padding-bottom: 8px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 10px 5px 10px 0;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    #result {
+      margin-top: 20px;
+      padding: 20px;
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      max-height: 500px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .error {
+      background: #ffebee;
+      border-color: #ef5350;
+      color: #c62828;
+    }
+    .success {
+      background: #e8f5e9;
+      border-color: #66bb6a;
+      color: #2e7d32;
+    }
+    input[type="file"] {
+      margin: 15px 0;
+      padding: 10px;
+      border: 2px dashed #ddd;
+      border-radius: 6px;
+      width: 100%;
+      cursor: pointer;
+    }
+    input[type="file"]:hover {
+      border-color: #4CAF50;
+    }
+    img {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 15px 0;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .status-ok { background: #4CAF50; }
+    .status-error { background: #f44336; }
+    .loading {
+      display: none;
+      margin-top: 10px;
+      color: #666;
+    }
+    .loading.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>🤖 AI接口测试工具</h1>
+  
+  <div class="test-section">
+    <h3>📡 1. 测试AI服务状态</h3>
+    <button onclick="testStatus()">🔍 测试 /api/ai/status</button>
+    <div class="loading" id="loading1">加载中...</div>
+  </div>
+  
+  <div class="test-section">
+    <h3>📷 2. 测试图片识别</h3>
+    <input type="file" id="imageInput" accept="image/*">
+    <img id="preview" style="display:none;">
+    <br>
+    <button onclick="testRecognize()">🎯 测试 /api/ai/recognize</button>
+    <div class="loading" id="loading2">识别中...</div>
+  </div>
+  
+  <div id="result"></div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000/api';
+    
+    console.log('🚀 测试页面已加载');
+    console.log('API基础地址:', API_BASE);
+    
+    // 显示图片预览
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+      console.log('📎 图片选择事件触发');
+      const file = e.target.files[0];
+      if (file) {
+        console.log('图片文件:', file.name, file.size, 'bytes');
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const img = document.getElementById('preview');
+          img.src = event.target.result;
+          img.style.display = 'block';
+          console.log('✅ 图片预览已加载');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    function showResult(text, isError = false) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = text;
+      resultDiv.className = isError ? 'error' : 'success';
+      resultDiv.style.display = 'block';
+    }
+    
+    function showLoading(id, show) {
+      const loading = document.getElementById(id);
+      if (show) {
+        loading.classList.add('active');
+      } else {
+        loading.classList.remove('active');
+      }
+    }
+    
+    async function testStatus() {
+      console.log('🔍 开始测试 AI 状态...');
+      
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = '正在测试 AI 状态...';
+      resultDiv.className = '';
+      showLoading('loading1', true);
+      
+      try {
+        const url = `${API_BASE}/ai/status`;
+        console.log('请求URL:', url);
+        
+        const response = await fetch(url);
+        console.log('响应状态:', response.status);
+        
+        const data = await response.json();
+        console.log('响应数据:', data);
+        
+        showResult(JSON.stringify(data, null, 2), !response.ok);
+      } catch (error) {
+        console.error('❗ 错误:', error);
+        showResult('错误: ' + error.message, true);
+      } finally {
+        showLoading('loading1', false);
+      }
+    }
+    
+    async function testRecognize() {
+      console.log('🎯 开始测试图片识别...');
+      
+      const resultDiv = document.getElementById('result');
+      const fileInput = document.getElementById('imageInput');
+      
+      if (!fileInput.files[0]) {
+        alert('请先选择图片');
+        console.warn('⚠️ 未选择图片');
+        return;
+      }
+      
+      resultDiv.textContent = '正在识别图片...';
+      resultDiv.className = '';
+      showLoading('loading2', true);
+      
+      // 读取图片为Base64
+      const reader = new FileReader();
+      reader.onload = async function(event) {
+        const imageData = event.target.result;
+        
+        console.log('📊 图片数据长度:', imageData.length);
+        console.log('📊 图片数据前100字符:', imageData.substring(0, 100));
+        
+        try {
+          const url = `${API_BASE}/ai/recognize`;
+          console.log('请求URL:', url);
+          
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              image: imageData
+            })
+          });
+          
+          console.log('响应状态:', response.status);
+          console.log('响应头:', [...response.headers.entries()]);
+          
+          const data = await response.json();
+          console.log('响应数据:', data);
+          
+          showResult(JSON.stringify(data, null, 2), !response.ok);
+        } catch (error) {
+          console.error('❗ 请求错误:', error);
+          showResult('错误: ' + error.message + '\n\n' + error.stack, true);
+        } finally {
+          showLoading('loading2', false);
+        }
+      };
+      
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+    
+    // 页面加载后自动测试连接
+    window.addEventListener('load', function() {
+      console.log('✅ 页面已完全加载');
+      console.log('📍 测试函数已注册:', typeof testStatus, typeof testRecognize);
+    });
+  </script>
+</body>
+</html>

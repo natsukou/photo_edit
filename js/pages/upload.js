@@ -114,9 +114,14 @@ const UploadPage = {
     try {
       // 调用后端代理API识别图片风格
       console.log('开始调用AI识别接口...');
+      console.log('图片URL长度:', this.imageUrl.length);
+      console.log('图片URL前缀:', this.imageUrl.substring(0, 100));
+      
       const response = await API._request('POST', '/ai/recognize', {
         image: this.imageUrl
       });
+      
+      console.log('API响应:', response);
       
       if (response.code === 0 && response.data) {
         const result = response.data;
@@ -138,7 +143,9 @@ const UploadPage = {
       }
     } catch (error) {
       console.error('AI分析错误:', error);
-      Utils.toast('分析失败，请重试');
+      console.error('错误详情:', error.message);
+      console.error('错误堆栈:', error.stack);
+      Utils.toast('分析失败: ' + (error.message || '请重试'));
       document.getElementById('loadingSection').classList.add('hidden');
       document.getElementById('imagePreview').classList.remove('hidden');
     }

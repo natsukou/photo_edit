@@ -296,6 +296,13 @@ const API = {
       }
     };
 
+    console.log('📡 准备发送请求:', {
+      method,
+      url,
+      fullUrl,
+      baseURL: API_CONFIG.baseURL
+    });
+
     let bodyString = '';
     if (data) {
       if (method === 'GET') {
@@ -341,16 +348,36 @@ const API = {
     options.signal = controller.signal;
 
     try {
+      console.log('🚀 开始请求:', fullUrl);
       const response = await fetch(fullUrl, options);
       clearTimeout(timeoutId);
       
+      console.log('✅ 收到响应:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ 请求失败:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      return await response.json();
+      const result = await response.json();
+      console.log('📊 响应数据:', result);
+      return result;
     } catch (error) {
       clearTimeout(timeoutId);
+      console.error('❌ 请求异常:', {
+        name: error.name,
+        message: error.message,
+        url: fullUrl
+      });
       if (error.name === 'AbortError') {
         throw new Error('请求超时');
       }
