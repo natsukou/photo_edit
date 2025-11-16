@@ -4,13 +4,9 @@ access: default
 
 vars:
   region: cn-shanghai
-  service:
-    name: photo-advice
-    description: AI拍照辅助后端API服务
-    internetAccess: true
 
-services:
-  api-service:
+resources:
+  photo-advice-function:
     component: fc3
     props:
       region: ${vars.region}
