@@ -55,6 +55,18 @@ const ResultPage = {
     // 🔥 修复：移除这里的配额消耗，因为已经在upload页面检查过了
     // await App.consumeQuota(); // 删除！
     
+    // 🔥 构建建议列表，过滤空内容
+    const adviceItems = [
+      { title: '构图建议', content: advice.composition },
+      { title: '光线处理', content: advice.lighting },
+      { title: '拍摄角度', content: advice.angle },
+      { title: '后期处理', content: advice.postProcessing },
+      { title: '道具推荐', content: advice.props },
+      { title: '注意事项', content: advice.tips }
+    ].filter(item => item.content && item.content.trim().length > 0);  // 过滤空内容
+    
+    console.log('有效建议数量:', adviceItems.length);
+    
     // 上报照片记录到服务器
     try {
       const photoData = await API.createPhotoRecord({
@@ -125,48 +137,15 @@ const ResultPage = {
           <div class="advice-section">
             <h2 class="section-title">💡 拍摄建议</h2>
             <div class="advice-list">
-              <div class="advice-item">
-                <div class="advice-number">1</div>
-                <div class="advice-content">
-                  <h3 class="advice-title">构图建议</h3>
-                  <p class="advice-desc">${advice.composition}</p>
+              ${adviceItems.map((item, index) => `
+                <div class="advice-item">
+                  <div class="advice-number">${index + 1}</div>
+                  <div class="advice-content">
+                    <h3 class="advice-title">${item.title}</h3>
+                    <p class="advice-desc">${item.content}</p>
+                  </div>
                 </div>
-              </div>
-              <div class="advice-item">
-                <div class="advice-number">2</div>
-                <div class="advice-content">
-                  <h3 class="advice-title">光线处理</h3>
-                  <p class="advice-desc">${advice.lighting}</p>
-                </div>
-              </div>
-              <div class="advice-item">
-                <div class="advice-number">3</div>
-                <div class="advice-content">
-                  <h3 class="advice-title">拍摄角度</h3>
-                  <p class="advice-desc">${advice.angle}</p>
-                </div>
-              </div>
-              <div class="advice-item">
-                <div class="advice-number">4</div>
-                <div class="advice-content">
-                  <h3 class="advice-title">后期处理</h3>
-                  <p class="advice-desc">${advice.postProcessing}</p>
-                </div>
-              </div>
-              <div class="advice-item">
-                <div class="advice-number">5</div>
-                <div class="advice-content">
-                  <h3 class="advice-title">道具推荐</h3>
-                  <p class="advice-desc">${advice.props}</p>
-                </div>
-              </div>
-              <div class="advice-item">
-                <div class="advice-number">6</div>
-                <div class="advice-content">
-                  <h3 class="advice-title">注意事项</h3>
-                  <p class="advice-desc">${advice.tips}</p>
-                </div>
-              </div>
+              `).join('')}
             </div>
           </div>
           

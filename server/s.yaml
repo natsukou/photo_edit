@@ -19,13 +19,8 @@ resources:
       timeout: 60
       environmentVariables:
         NODE_ENV: production
-        DB_HOST: ${env(DB_HOST)}
-        DB_PORT: ${env(DB_PORT)}
-        DB_USER: ${env(DB_USER)}
-        DB_PASSWORD: ${env(DB_PASSWORD)}
-        DB_NAME: ${env(DB_NAME)}
         DASHSCOPE_API_KEY: ${env(DASHSCOPE_API_KEY)}
-        ALLOWED_ORIGINS: https://modelscope.cn,https://nakia9-photo-advice2.ms.show
+        ALLOWED_ORIGINS: https://modelscope.cn,https://nakia9-photo-advice2.ms.show,https://nakia9-photo-advice2.hf.space
       triggers:
         - triggerType: http
           triggerName: httpTrigger

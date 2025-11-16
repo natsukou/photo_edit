@@ -135,6 +135,10 @@ const UploadPage = {
       if (response.code === 0 && response.data) {
         const result = response.data;
         
+        // 🔥 AI识别成功，消费配额
+        await App.consumeQuota();
+        console.log('✅ 配额已消耗，剩余:', App.getRemainingQuota());
+        
         // 保存AI识别结果
         App.globalData.aiRecognizedCategory = result.category;
         App.globalData.aiRecognizedStyle = result.style;
