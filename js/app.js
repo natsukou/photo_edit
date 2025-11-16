@@ -70,26 +70,36 @@ const App = {
   },
   
   async consumeQuota() {
-    if (this.globalData.remainingQuota > 0) {
-      // 尝试从服务器消费配额
-      const user_id = Utils.storage.get('user_id');
-      if (user_id) {
-        try {
-          const result = await API.consumeQuota(user_id);
+    const currentQuota = this.globalData.remainingQuota;
+    console.log('🔍 开始消费配额，当前配额:', currentQuota);
+    
+    if (currentQuota <= 0) {
+      console.warn('⚠️ 配额不足，无法消费');
+      return false;
+    }
+    
+    // 先本地扣减，确保配额立即减少
+    this.globalData.remainingQuota = currentQuota - 1;
+    Utils.storage.set('remainingQuota', this.globalData.remainingQuota);
+    console.log('✅ 本地配额已扣减:', this.globalData.remainingQuota);
+    
+    // 尝试同步到服务器（失败不影响本地配额）
+    const user_id = Utils.storage.get('user_id');
+    if (user_id) {
+      try {
+        const result = await API.consumeQuota(user_id);
+        // 如果服务器返回的配额有效，使用服务器的数据
+        if (result && typeof result.remaining_quota === 'number' && result.remaining_quota >= 0) {
           this.globalData.remainingQuota = result.remaining_quota;
           Utils.storage.set('remainingQuota', result.remaining_quota);
-          return true;
-        } catch (error) {
-          console.log('服务器消费配额失败，使用本地配额');
+          console.log('✅ 同步服务器配额成功:', result.remaining_quota);
         }
+      } catch (error) {
+        console.log('⚠️ 服务器同步失败，使用本地配额');
       }
-      
-      // 降级到本地扣减
-      this.globalData.remainingQuota--;
-      Utils.storage.set('remainingQuota', this.globalData.remainingQuota);
-      return true;
     }
-    return false;
+    
+    return true;
   },
   
   getRemainingQuota() {
