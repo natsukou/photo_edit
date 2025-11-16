@@ -108,6 +108,15 @@ const UploadPage = {
   async analyzeImage() {
     if (!this.imageUrl) return;
     
+    // 🔥 检查配额
+    const quota = App.getRemainingQuota();
+    console.log('当前配额:', quota);
+    
+    if (quota <= 0) {
+      Utils.toast('今日配额已用完，请明天再来！');
+      return;
+    }
+    
     document.getElementById('imagePreview').classList.add('hidden');
     document.getElementById('loadingSection').classList.remove('hidden');
     

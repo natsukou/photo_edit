@@ -52,8 +52,8 @@ const ResultPage = {
     
     console.log('最终使用的建议:', advice);
     
-    // 消费配额
-    await App.consumeQuota();
+    // 🔥 修复：移除这里的配额消耗，因为已经在upload页面检查过了
+    // await App.consumeQuota(); // 删除！
     
     // 上报照片记录到服务器
     try {
@@ -117,8 +117,8 @@ const ResultPage = {
             </div>
             
             <div class="image-container" id="tabContent2" style="display: none">
-              <img src="${sampleUrl}" style="width: 100%; height: auto;" onerror="this.src='https://via.placeholder.com/600x800'">
-              <p class="reference-caption">${category} - ${style}</p>
+              <img src="/images/samples/default.jpg" alt="参考样例" style="width: 100%; height: auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+              <p class="reference-caption" style="display: none; padding: 40px; text-align: center; color: #999;">暂无参考样例</p>
             </div>
           </div>
           
@@ -186,8 +186,8 @@ const ResultPage = {
             <div class="modal-body">
               <p>扫码添加微信，获取更多免费图片额度！</p>
               <div class="qrcode-container">
-                <img src="images/wechat-qrcode.jpg" alt="微信二维码" onerror="this.src='https://via.placeholder.com/200x200?text=QR+Code'" style="width: 200px; height: 200px; border: 2px solid #000; object-fit: contain;">
-                <p style="font-size: 12px; color: #666; margin-top: 8px;">长按保存二维码</p>
+                <img src="/images/wechat-qrcode.jpg" alt="微信二维码" style="width: 200px; height: 200px; border: 2px solid #000; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <p style="font-size: 12px; color: #666; margin-top: 8px; display: none;">二维码加载失败</p>
               </div>
               <div class="contact-info">
                 <span>💬 微信号：</span>
