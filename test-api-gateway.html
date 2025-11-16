@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API网关测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .result {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .error {
+      background: #ffebee;
+      border-color: #f44336;
+      color: #c62828;
+    }
+    .success {
+      background: #e8f5e9;
+      border-color: #4CAF50;
+      color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 API网关诊断工具</h1>
+  
+  <div class="test-section">
+    <h2>测试1: 检查API网关可达性</h2>
+    <button onclick="testGatewayHealth()">测试健康检查</button>
+    <div id="health-result" class="result" style="display: none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>测试2: 测试用户登录接口</h2>
+    <button onclick="testUserLogin()">测试用户登录</button>
+    <div id="login-result" class="result" style="display: none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>测试3: 测试AI识别接口（需要图片）</h2>
+    <input type="file" id="testImage" accept="image/*">
+    <button onclick="testAIRecognize()">测试AI识别</button>
+    <div id="ai-result" class="result" style="display: none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>测试4: 直接访问ECS后端</h2>
+    <button onclick="testDirectBackend()">测试ECS直连</button>
+    <div id="ecs-result" class="result" style="display: none;"></div>
+  </div>
+
+  <script>
+    const API_GATEWAY = 'https://b6cb40828efb4332baaef3da54b96514-cn-shanghai.alicloudapi.com/api';
+    const ECS_BACKEND = 'http://139.224.199.2:3000/api';
+
+    function showResult(id, content, isError = false) {
+      const element = document.getElementById(id);
+      element.style.display = 'block';
+      element.textContent = content;
+      element.className = 'result ' + (isError ? 'error' : 'success');
+    }
+
+    async function testGatewayHealth() {
+      showResult('health-result', '正在测试...', false);
+      try {
+        console.log('测试URL:', API_GATEWAY + '/health');
+        const response = await fetch(API_GATEWAY + '/health', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('响应状态:', response.status);
+        console.log('响应头:', [...response.headers.entries()]);
+        
+        const text = await response.text();
+        console.log('响应文本:', text);
+        
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error('响应不是JSON格式: ' + text);
+        }
+        
+        showResult('health-result', 
+          `✅ API网关连接成功！\n` +
+          `状态码: ${response.status}\n` +
+          `响应: ${JSON.stringify(data, null, 2)}`, 
+          false
+        );
+      } catch (error) {
+        console.error('健康检查失败:', error);
+        showResult('health-result', 
+          `❌ 连接失败\n` +
+          `错误: ${error.message}\n` +
+          `详情: ${error.stack}`, 
+          true
+        );
+      }
+    }
+
+    async function testUserLogin() {
+      showResult('login-result', '正在测试...', false);
+      try {
+        const payload = {
+          user_id: 'test_' + Date.now(),
+          nickname: '测试用户',
+          source: 'h5'
+        };
+        
+        console.log('请求URL:', API_GATEWAY + '/users/login');
+        console.log('请求体:', payload);
+        
+        const response = await fetch(API_GATEWAY + '/users/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        console.log('响应状态:', response.status);
+        const data = await response.json();
+        console.log('响应数据:', data);
+        
+        showResult('login-result', 
+          `✅ 用户登录接口正常！\n` +
+          `状态码: ${response.status}\n` +
+          `响应: ${JSON.stringify(data, null, 2)}`, 
+          false
+        );
+      } catch (error) {
+        console.error('登录测试失败:', error);
+        showResult('login-result', 
+          `❌ 请求失败\n` +
+          `错误: ${error.message}`, 
+          true
+        );
+      }
+    }
+
+    async function testAIRecognize() {
+      const fileInput = document.getElementById('testImage');
+      if (!fileInput.files[0]) {
+        alert('请先选择一张图片');
+        return;
+      }
+
+      showResult('ai-result', '正在测试...', false);
+      
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const base64Image = e.target.result;
+          
+          console.log('请求URL:', API_GATEWAY + '/ai/recognize');
+          console.log('图片大小:', base64Image.length);
+          
+          const response = await fetch(API_GATEWAY + '/ai/recognize', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              image: base64Image
+            })
+          });
+          
+          console.log('响应状态:', response.status);
+          const data = await response.json();
+          console.log('响应数据:', data);
+          
+          showResult('ai-result', 
+            `✅ AI识别接口正常！\n` +
+            `状态码: ${response.status}\n` +
+            `响应: ${JSON.stringify(data, null, 2)}`, 
+            false
+          );
+        } catch (error) {
+          console.error('AI识别失败:', error);
+          showResult('ai-result', 
+            `❌ 请求失败\n` +
+            `错误: ${error.message}`, 
+            true
+          );
+        }
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    async function testDirectBackend() {
+      showResult('ecs-result', '正在测试...', false);
+      try {
+        console.log('测试URL:', ECS_BACKEND + '/health');
+        const response = await fetch(ECS_BACKEND + '/health', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        showResult('ecs-result', 
+          `✅ ECS后端连接成功！\n` +
+          `状态码: ${response.status}\n` +
+          `响应: ${JSON.stringify(data, null, 2)}`, 
+          false
+        );
+      } catch (error) {
+        console.error('ECS连接失败:', error);
+        showResult('ecs-result', 
+          `❌ 连接失败（这是正常的，因为ModelScope是HTTPS，不能访问HTTP）\n` +
+          `错误: ${error.message}`, 
+          true
+        );
+      }
+    }
+
+    // 页面加载时显示环境信息
+    console.log('='.repeat(50));
+    console.log('环境信息:');
+    console.log('当前域名:', window.location.hostname);
+    console.log('当前协议:', window.location.protocol);
+    console.log('API网关地址:', API_GATEWAY);
+    console.log('ECS后端地址:', ECS_BACKEND);
+    console.log('='.repeat(50));
+  </script>
+</body>
+</html>
