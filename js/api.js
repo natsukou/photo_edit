@@ -88,17 +88,14 @@ const API = {
   async consumeQuota(user_id) {
     try {
       const response = await this._request('POST', `/users/${user_id}/consume-quota`);
-      if (response.code === 0) {
-        Utils.storage.set('remainingQuota', response.data.remaining_quota);
+      if (response.code === 0 && response.data && typeof response.data.remaining_quota === 'number') {
         return response.data;
       }
-      throw new Error(response.message);
+      throw new Error(response.message || '服务器返回数据无效');
     } catch (error) {
       console.error('消费配额失败:', error);
-      // 降级到本地扣减
-      const quota = App.getRemainingQuota();
-      App.consumeQuota();
-      return { remaining_quota: quota - 1 };
+      // 🔥 不再递归调用，直接抛出错误，由App.consumeQuota()处理
+      throw error;
     }
   },
 
