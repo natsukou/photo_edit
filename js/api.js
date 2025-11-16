@@ -1,6 +1,6 @@
 // API 基础配置
 const API_CONFIG = {
-  // 生产环境使用API网关HTTPS地址，本地开发使用localhost
+  // 生产环境使用函数计算HTTPS地址，本地开发使用localhost
   baseURL: (function() {
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
@@ -9,18 +9,15 @@ const API_CONFIG = {
     console.log('当前协议:', protocol);
     console.log('是否包含modelscope:', hostname.includes('modelscope'));
     
-    // ModelScope环境使用阿里云API网关HTTPS地址
+    // ModelScope环境使用阿里云函数计算HTTPS地址
     if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname.includes('.ms.show')) {
-      console.log('✅ 使用API网关HTTPS地址');
-      return 'https://b6cb40828efb4332baaef3da54b96514-cn-shanghai.alicloudapi.com/api';
+      console.log('✅ 使用函数计算HTTPS地址');
+      // ⚠️ 部署函数计算后，将下面的URL替换为实际的函数URL
+      // 格式: https://xxxxx-xxxxx.cn-shanghai.fcapp.run
+      return 'https://REPLACE_WITH_YOUR_FC_URL';
     }
     
-    // 非localhost环境使用ECS HTTP地址（如其他测试环境）
-    if (hostname !== 'localhost') {
-      console.log('使用ECS后端地址: http://139.224.199.2:3000/api');
-      return 'http://139.224.199.2:3000/api';
-    }
-    
+    // 本地开发环境
     console.log('使用本地后端地址: http://localhost:3000/api');
     return 'http://localhost:3000/api';
   })(),
