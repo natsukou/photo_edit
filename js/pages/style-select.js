@@ -86,6 +86,16 @@ const StyleSelectPage = {
       return;
     }
     
+    // 🔥 自动填充AI识别的结果
+    if (App.globalData.aiRecognizedCategory && !this.selectedCategory) {
+      this.selectedCategory = App.globalData.aiRecognizedCategory;
+      console.log('✅ 自动选择AI识别的题材:', this.selectedCategory);
+    }
+    if (App.globalData.aiRecognizedStyle && this.selectedStyles.length === 0) {
+      this.selectedStyles = [App.globalData.aiRecognizedStyle];
+      console.log('✅ 自动选择AI识别的风格:', this.selectedStyles);
+    }
+    
     console.log('题材数量:', this.categories.length, '风格数量:', this.styles.length);
     
     // 渲染题材标签（不使用onclick，改用事件委托）
