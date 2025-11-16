@@ -14,7 +14,7 @@ const API_CONFIG = {
       console.log('✅ 使用函数计算HTTPS地址');
       // ⚠️ 部署函数计算后，将下面的URL替换为实际的函数URL
       // 格式: https://xxxxx-xxxxx.cn-shanghai.fcapp.run
-      return 'https://REPLACE_WITH_YOUR_FC_URL';
+      return 'https://你的函数计算URL';
     }
     
     // 本地开发环境
