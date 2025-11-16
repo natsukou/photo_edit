@@ -356,21 +356,38 @@ router.post('/advice', async (req, res) => {
 
     console.log('收到AI建议请求:', category, style);
 
-    const prompt = `你是一位专业摄影师。用户拍摄了一张${category}，想要${style}风格的效果。请提供5条简洁实用的拍摄建议，每条建议不超过25字。直接返回建议列表，格式为：1. XXX
-2. XXX
-3. XXX
-4. XXX
-5. XXX`;
+    const prompt = `你是一位专业摄影师，擅长${category}和${style}风格。用户希望获取详细且个性化的拍摄建议。
+
+请从以下5个维度提供建议，每条建议50-80字，语言风格有变化，避免模板化：
+
+1. **构图建议**：结合${category}和${style}风格，详细说明何种构图技巧最适合，包括主体位置、留白处理、视角选择等。可以使用一些具体数据（如“主体占撔1/3”）或比喻（如“像画框一样”）
+
+2. **光线处理**：详细描述最佳拍摄时间、光线角度、光比控制等。比如“黄昏时分侧光”“漫射光营造柔和感”等。要结合具体场景。
+
+3. **拍摄角度**：说明不同角度的效果差异，为什么这个角度适合${category}和${style}。比如“低角度仰拍显得更有气势”“俯视视角呈现纵深感”。
+
+4. **后期处理**：提供具体的后期参数建议，如“增加曝光+0.5档”“降低饱和度-20”“色温向暖色偏移”等。说明这样调整的原因。
+
+5. **道具推荐**：推荐能提升${style}风格的道具或元素，比如服装颜色、背景选择、摄影装备（滞镜等）。解释为什么这些道具能增强风格。
+
+直接输出5条建议，不需要标题，格式为：
+1. ...
+2. ...
+3. ...
+4. ...
+5. ...`;
 
     const requestBody = {
-      model: 'qwen-turbo',
+      model: 'qwen-plus',  // 使用更高级的模型
       input: {
         messages: [
           { role: 'user', content: prompt }
         ]
       },
       parameters: {
-        result_format: 'message'
+        result_format: 'message',
+        temperature: 0.8,  // 增加创意性
+        max_tokens: 1000   // 允许更长的输出
       }
     };
 
@@ -393,11 +410,11 @@ router.post('/advice', async (req, res) => {
       const content = data.output.choices[0].message.content;
       console.log('AI建议生成成功:', content.substring(0, 100));
 
-      // 解析建议列表
+      // 解析建议列表（保持完整内容）
       const adviceList = content.split('\n')
         .filter(line => line.trim())
-        .map(line => line.replace(/^\d+\.\s*/, '').trim())
-        .filter(line => line.length > 0)
+        .map(line => line.replace(/^\d+\.\s*/, '').replace(/^\*\*.*?\*\*\uff1a?\s*/, '').trim())  // 移除序号和加粗标题
+        .filter(line => line.length > 10)  // 过滤过短的行
         .slice(0, 5);
 
       if (data.usage) {

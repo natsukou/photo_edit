@@ -12,7 +12,7 @@ const API_CONFIG = {
     // ModelScope环境使用阿里云函数计算HTTPS地址
     if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname.includes('.ms.show')) {
       console.log('✅ 使用函数计算HTTPS地址');
-      return 'https://photo-avice-api-butlygamip.cn-shanghai.fcapp.run/api/api';
+      return 'https://photo-avice-api-butlygamip.cn-shanghai.fcapp.run/api';  // 修复：移除多余的/api
     }
     
     // 本地开发环境
