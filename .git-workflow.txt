@@ -1,0 +1,63 @@
+# Git 分支管理说明
+
+## 分支策略
+
+### master 分支（完整代码）
+- 包含前端 + 后端（server目录）
+- 推送到 GitHub：http://www.modelscope.cn/studios/nakia9/photo_advice2.git
+
+### modelscope-frontend-update 分支（仅前端）
+- 只包含前端代码，不含 server/ 目录
+- 推送到 ModelScope 的 master 分支
+
+## ⚠️ 重要规则
+
+### 1. 永远不要合并这两个分支！
+```bash
+# ❌ 错误操作 - 会导致 server 被删除
+git checkout master
+git merge modelscope-frontend-update  # 这会删除 server 目录！
+
+git checkout modelscope-frontend-update
+git merge master  # 这会添加 server 目录到前端分支！
+```
+
+### 2. 正确的代码同步方式
+```bash
+# 修改前端代码后的推送流程：
+
+# 1. 在 master 分支提交
+git checkout master
+git add js/pages/xxx.js
+git commit -m "修复前端问题"
+git push origin master
+
+# 2. cherry-pick 到 modelscope 分支
+git checkout modelscope-frontend-update
+git cherry-pick <commit-hash>  # 只挑选前端相关的提交
+git push origin modelscope-frontend-update:master
+
+# 3. 切回 master
+git checkout master
+```
+
+### 3. 如果 server 被误删除了
+```bash
+# 从历史恢复 server 目录
+git checkout master
+git checkout <之前的commit-hash> -- server/
+git add server/
+git commit -m "恢复server目录"
+git push origin master
+```
+
+### 4. 查找包含 server 的历史提交
+```bash
+git log --oneline --all -- server/server.js | head -5
+```
+
+## 当前状态
+
+- master 分支：包含完整代码（前端 + server）
+- modelscope-frontend-update 分支：只包含前端代码
+- 两个分支独立维护，通过 cherry-pick 同步前端修改
