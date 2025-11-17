@@ -70,7 +70,8 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Ca-Key', 'X-Ca-Signature', 'X-Ca-Timestamp', 'X-Ca-Nonce', 'X-Ca-Signature-Method']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'Content-Type']
 }));
 
 // 请求体解析（增加到50MB以支持大图片）
