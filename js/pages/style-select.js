@@ -87,6 +87,12 @@ const StyleSelectPage = {
     }
     
     // 🔥 自动填充AI识别的结果
+    console.log('AI识别结果:', {
+      category: App.globalData.aiRecognizedCategory,
+      style: App.globalData.aiRecognizedStyle,
+      confidence: App.globalData.aiConfidence
+    });
+    
     if (App.globalData.aiRecognizedCategory && !this.selectedCategory) {
       this.selectedCategory = App.globalData.aiRecognizedCategory;
       console.log('✅ 自动选择AI识别的题材:', this.selectedCategory);
@@ -97,6 +103,8 @@ const StyleSelectPage = {
     }
     
     console.log('题材数量:', this.categories.length, '风格数量:', this.styles.length);
+    console.log('当前选中的题材:', this.selectedCategory);
+    console.log('当前选中的风格:', this.selectedStyles);
     
     // 渲染题材标签（不使用onclick，改用事件委托）
     const categoryHTML = this.categories.map(cat => 
@@ -112,6 +120,7 @@ const StyleSelectPage = {
     styleList.innerHTML = styleHTML;
     
     console.log('标签渲染完成 - 题材:', categoryList.children.length, '风格:', styleList.children.length);
+    console.log('active标签数量:', document.querySelectorAll('.tag.active').length);
     
     // 使用事件委托绑定点击事件（微信小程序兼容）
     this.bindTagEvents();
