@@ -141,15 +141,13 @@ const UploadPage = {
         App.globalData.aiConfidence = result.confidence || 85;
         
         console.log('AI识别成功:', result);
-        
-        // 跳转到风格选择页（可以预填AI识别的结果）
-        Router.navigate('style-select');
       } else {
-        // AI识别失败，仍然跳转，让用户手动选择
-        console.warn('AI识别失败，跳转到手动选择');
-        Utils.toast('AI识别失败，请手动选择风格');
-        Router.navigate('style-select');
+        // 🔥 AI识别失败，静默失败，不显示Toast
+        console.warn('AI识别失败，静默跳转到手动选择');
       }
+      
+      // 无论成功失败，都跳转到风格选择页
+      Router.navigate('style-select');
     } catch (error) {
       console.error('AI分析错误:', error);
       console.error('错误详情:', error.message);
