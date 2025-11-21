@@ -19,7 +19,7 @@ const API_CONFIG = {
     console.log('使用本地后端地址: http://localhost:3000/api');
     return 'http://localhost:3000/api';
   })(),
-  timeout: 30000,  // 增加超时时间到30秒，因为AI识别需要较长时间
+  timeout: 60000,  // 增加超时时间到60秒，因为AI识别需要较长时间（函数计算冷启动）
   
   // 阿里云APP认证配置（如果需要签名）
   aliyunApp: {
@@ -277,9 +277,9 @@ const API = {
   // ============================================
 
   /**
-   * 发送HTTP请求
+   * 发送HTTP请求（带重试机制）
    */
-  async _request(method, url, data = null) {
+  async _request(method, url, data = null, retries = 2) {
     let fullUrl = `${API_CONFIG.baseURL}${url}`;
     const options = {
       method,
@@ -292,7 +292,8 @@ const API = {
       method,
       url,
       fullUrl,
-      baseURL: API_CONFIG.baseURL
+      baseURL: API_CONFIG.baseURL,
+      retries
     });
 
     let bodyString = '';
@@ -368,10 +369,19 @@ const API = {
       console.error('❌ 请求异常:', {
         name: error.name,
         message: error.message,
-        url: fullUrl
+        url: fullUrl,
+        retriesLeft: retries
       });
+      
+      // 🔥 如果是网络错误且还有重试次数，则重试
+      if (retries > 0 && (error.name === 'AbortError' || error.message.includes('Failed to fetch') || error.message.includes('ERR_'))) {
+        console.warn(`🔄 网络错误，${retries}秒后重试... (${retries}次剩余)`);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // 等待2秒
+        return this._request(method, url, data, retries - 1);
+      }
+      
       if (error.name === 'AbortError') {
-        throw new Error('请求超时');
+        throw new Error('请求超时，请稍后重试');
       }
       throw error;
     }
