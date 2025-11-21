@@ -15,8 +15,8 @@ resources:
       runtime: nodejs18
       code: ./
       handler: index.handler
-      memorySize: 512
-      timeout: 60
+      memorySize: 1024
+      timeout: 120
       environmentVariables:
         NODE_ENV: production
         DASHSCOPE_API_KEY: ${env(DASHSCOPE_API_KEY)}

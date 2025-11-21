@@ -70,7 +70,8 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Ca-Key', 'X-Ca-Signature', 'X-Ca-Timestamp', 'X-Ca-Nonce', 'X-Ca-Signature-Method']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'Content-Type']
 }));
 
 // 请求体解析（增加到50MB以支持大图片）
@@ -141,13 +142,18 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
   try {
-    // 测试数据库连接
-    console.log('正在连接数据库...');
-    const dbConnected = await testConnection();
-    
-    if (!dbConnected) {
-      console.error('⚠️  数据库连接失败，但服务器仍会启动');
-      console.error('请检查 .env 配置文件中的数据库配置');
+    // 🔥 函数计算环境跳过数据库连接
+    if (process.env.FC_FUNC_CODE_PATH) {
+      console.log('📦 函数计算环境，跳过数据库连接');
+    } else {
+      // 测试数据库连接
+      console.log('正在连接数据库...');
+      const dbConnected = await testConnection();
+      
+      if (!dbConnected) {
+        console.error('⚠️  数据库连接失败，但服务器仍会启动');
+        console.error('请检查 .env 配置文件中的数据库配置');
+      }
     }
 
     // 启动HTTP服务器
@@ -211,7 +217,9 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// 启动
-startServer();
+// 启动（仅在非函数计算环境下）
+if (!process.env.FC_FUNC_CODE_PATH && require.main === module) {
+  startServer();
+}
 
 module.exports = app;
