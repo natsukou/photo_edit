@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
-const sharp = require('sharp');
+// 🔥 sharp按需加载，避免函数计算环境启动失败
+// const sharp = require('sharp');  
 const APISignature = require('../utils/api-signature');
 
 // 阿里云百炼API配置
@@ -27,6 +28,9 @@ console.log('  DASHSCOPE_API_KEY:', DASHSCOPE_API_KEY ? DASHSCOPE_API_KEY.substr
  */
 async function compressImage(base64Data) {
   try {
+    // 🔥 按需加载sharp
+    const sharp = require('sharp');
+    
     // 移除data URL前缀
     let base64String = base64Data;
     if (base64Data.startsWith('data:')) {
