@@ -121,20 +121,16 @@ const UploadPage = {
     document.getElementById('loadingSection').classList.remove('hidden');
     
     try {
-      // 调用后端代理API识别图片风格
+      // 🔥 直接调用阿里云API识别图片风格（方案1）
       console.log('开始调用AI识别接口...');
       console.log('图片URL长度:', this.imageUrl.length);
       console.log('图片URL前缀:', this.imageUrl.substring(0, 100));
       
-      const response = await API._request('POST', '/ai/recognize', {
-        image: this.imageUrl
-      });
+      const result = await AliCloud.recognizeStyle(this.imageUrl);
       
-      console.log('API响应:', response);
+      console.log('AI识别响应:', result);
       
-      if (response.code === 0 && response.data) {
-        const result = response.data;
-        
+      if (result && result.category) {
         // 🔥 AI识别成功，消费配额
         await App.consumeQuota();
         console.log('✅ 配额已消耗，剩余:', App.getRemainingQuota());

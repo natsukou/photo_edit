@@ -10,11 +10,9 @@ const AliCloud = {
     console.log('API Key:', this.apiKey ? this.apiKey.substring(0, 10) + '...' : '未配置');
     
     try {
-      // 移除base64前缀（如果有）
-      let imageData = base64Image;
-      if (base64Image.startsWith('data:image')) {
-        imageData = base64Image.split(',')[1];
-      }
+      // 🔥 压缩图片以满足API限制（20MB）
+      let imageData = await this.compressImage(base64Image);
+      console.log('压缩后图片大小:', imageData.length, '字符');
       
       const requestBody = {
         model: 'qwen-vl-plus',
@@ -66,6 +64,58 @@ const AliCloud = {
       console.error('错误堆栈:', error.stack);
       return null;
     }
+  },
+  
+  // 🔥 压缩图片
+  async compressImage(base64Image) {
+    // 移除data URL前缀（如果有）
+    let imageData = base64Image;
+    if (base64Image.startsWith('data:image')) {
+      imageData = base64Image.split(',')[1];
+    }
+    
+    // 检查大小，如果超过10MB，需要压缩
+    const sizeInMB = (imageData.length * 0.75) / (1024 * 1024); // base64 约为原始大小的1.33倍
+    console.log('图片大小:', sizeInMB.toFixed(2), 'MB');
+    
+    if (sizeInMB > 10) {
+      console.warn('⚠️ 图片过大，需要压缩');
+      // 使用Canvas压缩
+      return await this.compressImageByCanvas(base64Image);
+    }
+    
+    // 保持data URL格式
+    return base64Image;
+  },
+  
+  // 使用Canvas压缩图片
+  async compressImageByCanvas(base64Image) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // 限制最大宽度800px
+        const maxWidth = 800;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // 压缩质量70%
+        const compressedData = canvas.toDataURL('image/jpeg', 0.7);
+        console.log('压缩后大小:', compressedData.length, '字符');
+        resolve(compressedData);
+      };
+      img.src = base64Image;
+    });
   },
   
   // 解析识别结果
