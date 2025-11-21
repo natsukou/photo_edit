@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>本地AI接口测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .test-section {
+      background: #f5f5f5;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .result {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .error {
+      background: #ffebee;
+      border-color: #f44336;
+      color: #c62828;
+    }
+    .success {
+      background: #e8f5e9;
+      border-color: #4CAF50;
+      color: #2e7d32;
+    }
+    input[type="file"] {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 本地AI接口测试</h1>
+  
+  <div class="test-section">
+    <h2>1. 测试健康检查</h2>
+    <button onclick="testHealth()">测试 /health</button>
+    <div id="health-result" class="result" style="display: none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. 测试AI状态</h2>
+    <button onclick="testAIStatus()">测试 /api/ai/status</button>
+    <div id="status-result" class="result" style="display: none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. 测试AI识别</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="testAIRecognize()">测试 /api/ai/recognize</button>
+    <div id="recognize-result" class="result" style="display: none;"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000';
+
+    function showResult(id, content, isError = false) {
+      const element = document.getElementById(id);
+      element.style.display = 'block';
+      element.textContent = content;
+      element.className = 'result ' + (isError ? 'error' : 'success');
+    }
+
+    async function testHealth() {
+      showResult('health-result', '正在测试...', false);
+      try {
+        const response = await fetch(`${API_BASE}/health`);
+        const data = await response.json();
+        showResult('health-result', 
+          `✅ 健康检查成功！\n${JSON.stringify(data, null, 2)}`, 
+          false
+        );
+      } catch (error) {
+        showResult('health-result', 
+          `❌ 请求失败\n${error.message}`, 
+          true
+        );
+      }
+    }
+
+    async function testAIStatus() {
+      showResult('status-result', '正在测试...', false);
+      try {
+        const response = await fetch(`${API_BASE}/api/ai/status`);
+        const data = await response.json();
+        showResult('status-result', 
+          `✅ AI状态检查成功！\n${JSON.stringify(data, null, 2)}`, 
+          false
+        );
+      } catch (error) {
+        showResult('status-result', 
+          `❌ 请求失败\n${error.message}`, 
+          true
+        );
+      }
+    }
+
+    async function testAIRecognize() {
+      const fileInput = document.getElementById('imageInput');
+      if (!fileInput.files[0]) {
+        alert('请先选择一张图片');
+        return;
+      }
+
+      showResult('recognize-result', '正在测试...', false);
+      
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const base64Image = e.target.result;
+          console.log('图片大小:', base64Image.length);
+          
+          const startTime = Date.now();
+          const response = await fetch(`${API_BASE}/api/ai/recognize`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              image: base64Image
+            })
+          });
+          
+          const duration = Date.now() - startTime;
+          const data = await response.json();
+          
+          if (response.ok && data.code === 0) {
+            showResult('recognize-result', 
+              `✅ AI识别成功！(耗时: ${duration}ms)\n${JSON.stringify(data, null, 2)}`, 
+              false
+            );
+          } else {
+            showResult('recognize-result', 
+              `❌ AI识别失败\n${JSON.stringify(data, null, 2)}`, 
+              true
+            );
+          }
+        } catch (error) {
+          showResult('recognize-result', 
+            `❌ 请求失败\n${error.message}`, 
+            true
+          );
+        }
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+  </script>
+</body>
+</html>
