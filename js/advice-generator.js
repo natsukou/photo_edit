@@ -37,6 +37,26 @@ const AdviceGenerator = {
         '日系': '俯拍45度角，将主食物放在画面左上或右上的黄金分割点，周围适当留白并搭配小道具。',
         '高级': '使用对角线构图或三角形构图，营造层次感。注意餐具与食物的排列关系。',
         'default': '采用俯拍或45度角拍摄，将主体食物放在九宫格交叉点。注意配菜和餐具的搭配，营造层次感。'
+      },
+      '宠物': {
+        '日系': '将宠物放在画面三分之一处，留出呆萌的眼神空间。背景选择清新简洁的场景。',
+        'default': '将宠物的眼睛放在九宫格交叉点上，注意捕捉生动的瞬间。保持眼神对焦清晰。'
+      },
+      '街拍': {
+        'default': '使用三分法或中心构图，捕捉街头的生动瞬间。注意利用建筑线条和人物分布营造层次。'
+      },
+      '产品': {
+        'default': '采用中心构图或三分法，突出产品主体。注意背景的简洁性，避免喊宾夺主。'
+      },
+      '静物': {
+        'default': '使用三角形构图或对角线构图，营造视觉张力。注意光影的运用，增加画面深度。'
+      },
+      '花卉': {
+        '日系': '使用浅景深突出主体花卉，背景虚化营造梦幻感。将花朵放在黄金分割点。',
+        'default': '使用三分法构图，将主体花朵放在交叉点上。注意景深控制，突出主体同时虚化背景。'
+      },
+      '夜景': {
+        'default': '使用三分法构图，将灯光或亮部放在黄金分割点。注意明暗对比，营造夜景氛围。'
       }
     };
     
@@ -66,6 +86,21 @@ const AdviceGenerator = {
         '日系': '使用窗边自然散射光，或45度侧光。避免顶光产生的硬阴影，保持画面清新通透。',
         '高级': '侧光或侧逆光突出食物质感和立体感。可适当使用反光板填充阴影。',
         'default': '45度侧光最能表现食物的质感和层次。避免顶光和正面光，适当补光让暗部不会过黑。'
+      },
+      '宠物': {
+        'default': '选择柔和的自然光，避免直射强光。可使用侧光突出毛发质感，注意眼神光的补光。'
+      },
+      '街拍': {
+        'default': '利用自然光，黄昏时分的暖色调最佳。注意光影对比，增加画面戲剧性。'
+      },
+      '产品': {
+        'default': '使用柔光箱或散射光，营造均匀柔和的光线。可加侧光突出产品质感和立体感。'
+      },
+      '花卉': {
+        'default': '选择柔和的散射光或阴天，避免强烈直射光。可使用逆光营造通透感，突出花瓣细节。'
+      },
+      '夜景': {
+        'default': '利用城市灯光或自然月光。注意控制曝光，保留高光细节同时提亮暗部。'
       }
     };
     
@@ -103,14 +138,33 @@ const AdviceGenerator = {
   
   // 查找匹配的建议
   findAdvice(adviceMap, category, style) {
-    const categoryAdvice = adviceMap[category] || adviceMap['人像'];
+    // 🔥 类别名称映射：将长名称映射到短名称
+    const categoryMap = {
+      '人像摄影': '人像',
+      '风光摄影': '风光',
+      '建筑摄影': '建筑',
+      '宠物摄影': '宠物',
+      '美食摄影': '美食',
+      '街拍摄影': '街拍',
+      '产品摄影': '产品',
+      '静物摄影': '静物',
+      '花卉摄影': '花卉',
+      '夜景摄影': '夜景'
+    };
+    
+    // 尝试映射类别名称
+    const mappedCategory = categoryMap[category] || category;
+    
+    // 查找匹配的建议
+    const categoryAdvice = adviceMap[mappedCategory] || adviceMap['人像'] || {};
+    
     const styleKeywords = ['日系', '港风', '电影', '胶片', '大气', '极简', '现代', '高级'];
     for (const keyword of styleKeywords) {
       if (style.includes(keyword) && categoryAdvice[keyword]) {
         return categoryAdvice[keyword];
       }
     }
-    return categoryAdvice['default'] || categoryAdvice[Object.keys(categoryAdvice)[0]];
+    return categoryAdvice['default'] || categoryAdvice[Object.keys(categoryAdvice)[0]] || '请根据主题和风格进行拍摄。';
   },
   
   // 后期处理建议

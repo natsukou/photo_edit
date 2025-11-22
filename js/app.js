@@ -4,7 +4,11 @@ const App = {
     remainingQuota: 20,
     currentImage: null,
     currentCategory: '',
-    currentStyle: ''
+    currentStyle: '',
+    // 🔥 AI识别结果
+    aiRecognizedCategory: null,
+    aiRecognizedStyle: null,
+    aiConfidence: null
   },
   
   async initUser() {
