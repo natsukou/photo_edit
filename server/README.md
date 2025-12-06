@@ -1,4 +1,4 @@
-# AI拍照辅助 - 后端API服务
+# 红色丝绒 - 后端API服务
 
 基于 Node.js + Express + MySQL 的后端服务，提供数据上报接口，支持将用户行为数据同步到 DataWorks 进行分析。
 

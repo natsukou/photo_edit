@@ -1,7 +1,7 @@
 {
-  "name": "ai-photo-guide-h5",
+  "name": "red-velvet-h5",
   "version": "1.0.0",
-  "description": "AI拍照辅助 - H5网页版",
+  "description": "红色丝绒 - H5网页版",
   "main": "index.html",
   "scripts": {
     "start": "python3 -m http.server 8080",

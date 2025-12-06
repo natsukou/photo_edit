@@ -1,7 +1,7 @@
 {
-  "name": "photo-advice-server",
+  "name": "red-velvet-server",
   "version": "1.0.0",
-  "description": "AI拍照辅助后端API服务",
+  "description": "红色丝绒后端API服务",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

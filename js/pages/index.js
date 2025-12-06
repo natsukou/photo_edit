@@ -15,7 +15,7 @@ const IndexPage = {
         
         <div class="container index-container">
           <div class="header">
-            <h1 class="title">📸 AI拍照辅助</h1>
+            <h1 class="title">📸 红色丝绒</h1>
             <p class="subtitle">INTELLIGENT PHOTOGRAPHY GUIDE</p>
             <div class="quota-info">
               <span class="quota-label">剩余额度：</span>

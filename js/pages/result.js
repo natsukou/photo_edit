@@ -17,7 +17,8 @@ const ResultPage = {
     console.log('style:', style);
     console.log('imageUrl:', imageUrl ? imageUrl.substring(0, 50) + '...' : 'null');
     
-    const sampleUrl = SampleImages.getSampleImage(category, style.split(' ')[0]);
+    // 🔥 获取参考样例图片：传入完整的category和style
+    const sampleUrl = SampleImages.getSampleImage(category, style);
     console.log('sampleUrl:', sampleUrl);
     
     // 调用后端AI代理生成建议
@@ -115,7 +116,7 @@ const ResultPage = {
             </div>
             
             <div class="image-container" id="tabContent2" style="display: none">
-              <img src="/images/samples/default.jpg" alt="参考样例" style="width: 100%; height: auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+              <img src="${sampleUrl}" alt="参考样例" style="width: 100%; height: auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
               <p class="reference-caption" style="display: none; padding: 40px; text-align: center; color: #999;">暂无参考样例</p>
             </div>
           </div>

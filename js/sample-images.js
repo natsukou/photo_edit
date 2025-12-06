@@ -48,15 +48,42 @@ const SampleImages = {
   },
   
   getSampleImage(category, style) {
-    if (this.data[category] && this.data[category][style]) {
-      return this.data[category][style];
-    }
+    // 🔥 支持模糊匹配：如果传入"人像"，匹配"人像摄影"
+    let matchedCategory = null;
     
+    // 精确匹配
     if (this.data[category]) {
-      const firstStyle = Object.keys(this.data[category])[0];
-      return this.data[category][firstStyle];
+      matchedCategory = category;
+    } else {
+      // 模糊匹配：查找包含该关键词的类别
+      for (const key in this.data) {
+        if (key.includes(category) || category.includes(key.replace('摄影', ''))) {
+          matchedCategory = key;
+          break;
+        }
+      }
     }
     
-    return `https://via.placeholder.com/600x800/1a1a1a/f5f1e8?text=${encodeURIComponent(category)}`;
+    if (!matchedCategory) {
+      return `https://via.placeholder.com/600x800/1a1a1a/f5f1e8?text=${encodeURIComponent(category)}`;
+    }
+    
+    const categoryData = this.data[matchedCategory];
+    
+    // 精确匹配风格
+    if (categoryData[style]) {
+      return categoryData[style];
+    }
+    
+    // 模糊匹配风格：查找包含该关键词的风格
+    for (const styleKey in categoryData) {
+      if (styleKey.includes(style) || style.includes(styleKey)) {
+        return categoryData[styleKey];
+      }
+    }
+    
+    // 如果没有匹配，返回该类别的第一个样例
+    const firstStyle = Object.keys(categoryData)[0];
+    return categoryData[firstStyle];
   }
 };
