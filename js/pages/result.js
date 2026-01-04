@@ -21,15 +21,22 @@ const ResultPage = {
     const sampleUrl = SampleImages.getSampleImage(category, style);
     console.log('sampleUrl:', sampleUrl);
     
-    // 🔥 调用后端AI代理生成建议（强制使用AI，不降级）
-    let advice;
-    let aiSource = 'local';  // 记录建议来源：'ai' 或 'local'
+    // 🔥 先使用本地建议立即渲染页面，避免空白
+    const localAdvice = AdviceGenerator.getAdvice(category, style);
+    this.renderPage(category, style, imageUrl, sampleUrl, localAdvice, 'loading');
+    
+    // 🔥 异步加载AI建议，加载完成后更新页面
+    this.loadAIAdvice(category, style, imageUrl).catch(error => {
+      console.error('AI建议加载失败:', error);
+    });
+  },
+  
+  async loadAIAdvice(category, style, imageUrl) {
+    console.log('🚀 开始异步加载AI建议...');
+    console.log('  题材:', category);
+    console.log('  风格:', style);
     
     try {
-      console.log('🚀 开始调用AI生成建议...');
-      console.log('  题材:', category);
-      console.log('  风格:', style);
-      
       const response = await API._request('POST', '/ai/advice', {
         category: category,
         style: style,
@@ -40,12 +47,9 @@ const ResultPage = {
       
       if (response.code === 0 && response.data && Array.isArray(response.data) && response.data.length >= 3) {
         console.log('✅ AI建议生成成功! 数量:', response.data.length);
-        console.log('  建议内容:', response.data);
-        
-        aiSource = 'ai';
         
         // 将AI返回的数组格式转换为对象格式
-        advice = {
+        const aiAdvice = {
           composition: response.data[0] || AdviceGenerator.getCompositionAdvice(category, style),
           lighting: response.data[1] || AdviceGenerator.getLightingAdvice(category, style),
           angle: response.data[2] || AdviceGenerator.getAngleAdvice(category, style),
@@ -54,36 +58,21 @@ const ResultPage = {
           tips: response.data.length > 5 ? response.data[5] : AdviceGenerator.getTipsAdvice(category, style)
         };
         
-        // 在页面顶部显示AI标识
-        Utils.toast('✨ AI建议生成成功', 2000);
+        // 🔥 更新页面显示AI建议
+        this.updateAdvice(aiAdvice, 'ai');
+        Utils.toast('✨ AI建议已更新', 2000);
       } else {
         console.error('❌ AI返回数据格式错误:', response);
-        console.log('  response.code:', response.code);
-        console.log('  response.data:', response.data);
-        console.log('  是否为数组:', Array.isArray(response.data));
-        console.log('  数组长度:', response.data?.length);
-        
-        throw new Error(`AI返回数据无效: code=${response.code}, dataLength=${response.data?.length}`);
+        Utils.toast('⚠️ AI服务响应异常，使用本地建议', 3000);
       }
     } catch (error) {
-      console.error('❌ AI生成建议失败，使用本地兜底建议');
-      console.error('  错误类型:', error.name);
+      console.error('❌ AI生成建议失败');
       console.error('  错误信息:', error.message);
-      console.error('  错误堆栈:', error.stack);
-      
-      aiSource = 'local';
-      advice = AdviceGenerator.getAdvice(category, style);
-      
-      // 显示降级提示
       Utils.toast('⚠️ AI服务暂时不可用，使用本地建议', 3000);
     }
-    
-    console.log('📊 最终使用的建议来源:', aiSource === 'ai' ? 'AI生成' : '本地生成');
-    console.log('  建议内容:', advice);
-    
-    // 🔥 修复：移除这里的配额消耗，因为已经在upload页面检查过了
-    // await App.consumeQuota(); // 删除！
-    
+  },
+  
+  renderPage(category, style, imageUrl, sampleUrl, advice, aiSource = 'local') {
     // 🔥 构建建议列表，过滤空内容
     const adviceItems = [
       { title: '构图建议', content: advice.composition },
@@ -92,21 +81,9 @@ const ResultPage = {
       { title: '后期处理', content: advice.postProcessing },
       { title: '道具推荐', content: advice.props },
       { title: '注意事项', content: advice.tips }
-    ].filter(item => item.content && item.content.trim().length > 0);  // 过滤空内容
-    
-    console.log('有效建议数量:', adviceItems.length);
-    
-    // 🔥 前端直接调用模式，不需要上报后端
-    // 上报照片记录到服务器
-    // try {
-    //   const photoData = await API.createPhotoRecord({ ... });
-    // } catch (error) { }
-    
-    // 记录页面访问
-    // API.recordPageView({ ... });
+    ].filter(item => item.content && item.content.trim().length > 0);
     
     const app = document.getElementById('app');
-    console.log('app 元素:', app);
     app.innerHTML = `
       <div class="page" data-page="result">
         <div class="container result-container">
@@ -149,9 +126,9 @@ const ResultPage = {
             </div>
           </div>
           
-          <div class="advice-section">
-            <h2 class="section-title">💡 拍摄建议 ${aiSource === 'ai' ? '<span style="font-size: 14px; color: #4CAF50; font-weight: normal;">(✨ AI智能生成)</span>' : '<span style="font-size: 14px; color: #999; font-weight: normal;">(本地模板)</span>'}</h2>
-            <div class="advice-list">
+          <div class="advice-section" id="adviceSection">
+            <h2 class="section-title" id="adviceTitle">💡 拍摄建议 ${aiSource === 'ai' ? '<span style="font-size: 14px; color: #4CAF50; font-weight: normal;">(✨ AI智能生成)</span>' : aiSource === 'loading' ? '<span style="font-size: 14px; color: #FF9800; font-weight: normal;">(🔄 正在加载AI建议...)</span>' : '<span style="font-size: 14px; color: #999; font-weight: normal;">(本地模板)</span>'}</h2>
+            <div class="advice-list" id="adviceList">
               ${adviceItems.map((item, index) => `
                 <div class="advice-item">
                   <div class="advice-number">${index + 1}</div>
@@ -439,5 +416,43 @@ const ResultPage = {
   backToHome() {
     this.closeModal();
     Router.reLaunch('index');
+  },
+  
+  // 🔥 更新建议内容
+  updateAdvice(advice, aiSource = 'ai') {
+    const category = App.globalData.currentCategory;
+    const style = App.globalData.currentStyle;
+    
+    // 构建建议列表
+    const adviceItems = [
+      { title: '构图建议', content: advice.composition },
+      { title: '光线处理', content: advice.lighting },
+      { title: '拍摄角度', content: advice.angle },
+      { title: '后期处理', content: advice.postProcessing },
+      { title: '道具推荐', content: advice.props },
+      { title: '注意事项', content: advice.tips }
+    ].filter(item => item.content && item.content.trim().length > 0);
+    
+    // 更新标题
+    const adviceTitle = document.getElementById('adviceTitle');
+    if (adviceTitle) {
+      adviceTitle.innerHTML = `💡 拍摄建议 ${aiSource === 'ai' ? '<span style="font-size: 14px; color: #4CAF50; font-weight: normal;">(✨ AI智能生成)</span>' : '<span style="font-size: 14px; color: #999; font-weight: normal;">(本地模板)</span>'}`;
+    }
+    
+    // 更新建议列表
+    const adviceList = document.getElementById('adviceList');
+    if (adviceList) {
+      adviceList.innerHTML = adviceItems.map((item, index) => `
+        <div class="advice-item">
+          <div class="advice-number">${index + 1}</div>
+          <div class="advice-content">
+            <h3 class="advice-title">${item.title}</h3>
+            <p class="advice-desc">${item.content}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    console.log('✅ 建议内容已更新，来源:', aiSource);
   }
 };

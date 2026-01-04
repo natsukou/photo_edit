@@ -121,33 +121,38 @@ const UploadPage = {
     document.getElementById('loadingSection').classList.remove('hidden');
     
     try {
-      // 🔥 直接调用阿里云API识别图片风格（方案1）
-      console.log('开始调用AI识别接口...');
+      // 🔥 调用后端代理接口识别图片风格
+      console.log('🚀 开始调用后端AI识别接口...');
       console.log('图片URL长度:', this.imageUrl.length);
       console.log('图片URL前缀:', this.imageUrl.substring(0, 100));
       
-      const result = await AliCloud.recognizeStyle(this.imageUrl);
+      // 调用后端代理接口
+      const response = await API._request('POST', '/ai/recognize', {
+        image: this.imageUrl
+      });
       
-      console.log('AI识别响应:', result);
+      console.log('✅ AI识别响应:', response);
       
-      if (result && result.category) {
-        // 🔥 AI识别成功，消费配额
-        await App.consumeQuota();
-        console.log('✅ 配额已消耗，剩余:', App.getRemainingQuota());
-        
+      if (response.code === 0 && response.data) {
         // 🔥 AI识别成功，消费配额
         await App.consumeQuota();
         console.log('✅ 配额已消耗，剩余:', App.getRemainingQuota());
         
         // 保存AI识别结果
-        App.globalData.aiRecognizedCategory = result.category;
-        App.globalData.aiRecognizedStyle = result.style;
-        App.globalData.aiConfidence = result.confidence || 85;
+        App.globalData.aiRecognizedCategory = response.data.category;
+        App.globalData.aiRecognizedStyle = response.data.style;
+        App.globalData.aiConfidence = response.data.confidence || 85;
         
-        console.log('AI识别成功:', result);
+        console.log('✅ AI识别成功:', {
+          category: response.data.category,
+          style: response.data.style,
+          confidence: response.data.confidence
+        });
+        
+        Utils.toast('✨ AI识别成功', 1500);
       } else {
         // 🔥 AI识别失败，静默失败，不显示Toast
-        console.warn('AI识别失败，静默跳转到手动选择');
+        console.warn('⚠️ AI识别失败，静默跳转到手动选择');
       }
       
       // 无论成功失败，都跳转到风格选择页
