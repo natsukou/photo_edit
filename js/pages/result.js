@@ -21,18 +21,29 @@ const ResultPage = {
     const sampleUrl = SampleImages.getSampleImage(category, style);
     console.log('sampleUrl:', sampleUrl);
     
-    // 调用后端AI代理生成建议
+    // 🔥 调用后端AI代理生成建议（强制使用AI，不降级）
     let advice;
+    let aiSource = 'local';  // 记录建议来源：'ai' 或 'local'
+    
     try {
-      console.log('尝试调用AI生成建议...');
+      console.log('🚀 开始调用AI生成建议...');
+      console.log('  题材:', category);
+      console.log('  风格:', style);
+      
       const response = await API._request('POST', '/ai/advice', {
         category: category,
         style: style,
         imageUrl: imageUrl
       });
       
-      if (response.code === 0 && response.data && response.data.length >= 3) {
-        console.log('AI建议生成成功:', response.data);
+      console.log('✅ AI接口响应:', response);
+      
+      if (response.code === 0 && response.data && Array.isArray(response.data) && response.data.length >= 3) {
+        console.log('✅ AI建议生成成功! 数量:', response.data.length);
+        console.log('  建议内容:', response.data);
+        
+        aiSource = 'ai';
+        
         // 将AI返回的数组格式转换为对象格式
         advice = {
           composition: response.data[0] || AdviceGenerator.getCompositionAdvice(category, style),
@@ -40,18 +51,35 @@ const ResultPage = {
           angle: response.data[2] || AdviceGenerator.getAngleAdvice(category, style),
           postProcessing: response.data[3] || AdviceGenerator.getPostProcessingAdvice(category, style),
           props: response.data[4] || AdviceGenerator.getPropsAdvice(category, style),
-          tips: AdviceGenerator.getTipsAdvice(category, style)
+          tips: response.data.length > 5 ? response.data[5] : AdviceGenerator.getTipsAdvice(category, style)
         };
+        
+        // 在页面顶部显示AI标识
+        Utils.toast('✨ AI建议生成成功', 2000);
       } else {
-        console.warn('AI返回为空，使用本地mock建议');
-        advice = AdviceGenerator.getAdvice(category, style);
+        console.error('❌ AI返回数据格式错误:', response);
+        console.log('  response.code:', response.code);
+        console.log('  response.data:', response.data);
+        console.log('  是否为数组:', Array.isArray(response.data));
+        console.log('  数组长度:', response.data?.length);
+        
+        throw new Error(`AI返回数据无效: code=${response.code}, dataLength=${response.data?.length}`);
       }
     } catch (error) {
-      console.error('AI生成建议失败，使用本地mock建议:', error);
+      console.error('❌ AI生成建议失败，使用本地兜底建议');
+      console.error('  错误类型:', error.name);
+      console.error('  错误信息:', error.message);
+      console.error('  错误堆栈:', error.stack);
+      
+      aiSource = 'local';
       advice = AdviceGenerator.getAdvice(category, style);
+      
+      // 显示降级提示
+      Utils.toast('⚠️ AI服务暂时不可用，使用本地建议', 3000);
     }
     
-    console.log('最终使用的建议:', advice);
+    console.log('📊 最终使用的建议来源:', aiSource === 'ai' ? 'AI生成' : '本地生成');
+    console.log('  建议内容:', advice);
     
     // 🔥 修复：移除这里的配额消耗，因为已经在upload页面检查过了
     // await App.consumeQuota(); // 删除！
@@ -122,7 +150,7 @@ const ResultPage = {
           </div>
           
           <div class="advice-section">
-            <h2 class="section-title">💡 拍摄建议</h2>
+            <h2 class="section-title">💡 拍摄建议 ${aiSource === 'ai' ? '<span style="font-size: 14px; color: #4CAF50; font-weight: normal;">(✨ AI智能生成)</span>' : '<span style="font-size: 14px; color: #999; font-weight: normal;">(本地模板)</span>'}</h2>
             <div class="advice-list">
               ${adviceItems.map((item, index) => `
                 <div class="advice-item">

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试配额重置</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+    .info-box {
+      background: #f9f9f9;
+      border-left: 4px solid #4CAF50;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .info-box.error {
+      border-left-color: #f44336;
+      background: #ffebee;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    button {
+      flex: 1;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #4CAF50;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #45a049;
+    }
+    .btn-secondary {
+      background: #2196F3;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background: #0b7dda;
+    }
+    .btn-warning {
+      background: #ff9800;
+      color: white;
+    }
+    .btn-warning:hover {
+      background: #e68900;
+    }
+    .btn-danger {
+      background: #f44336;
+      color: white;
+    }
+    .btn-danger:hover {
+      background: #da190b;
+    }
+    .quota-display {
+      font-size: 48px;
+      font-weight: bold;
+      text-align: center;
+      color: #4CAF50;
+      margin: 30px 0;
+    }
+    .log-box {
+      background: #000;
+      color: #0f0;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 14px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 配额重置测试工具</h1>
+    
+    <div class="info-box">
+      <strong>当前配额：</strong>
+      <div class="quota-display" id="quotaDisplay">加载中...</div>
+    </div>
+    
+    <div class="info-box" id="infoBox">
+      <strong>上次重置日期：</strong> <span id="lastResetDate">-</span><br>
+      <strong>今天日期：</strong> <span id="todayDate">-</span><br>
+      <strong>需要重置？</strong> <span id="needReset">-</span>
+    </div>
+    
+    <div class="button-group">
+      <button class="btn-primary" onclick="checkQuota()">🔍 检查配额</button>
+      <button class="btn-secondary" onclick="simulateNewDay()">📅 模拟新的一天</button>
+      <button class="btn-warning" onclick="consumeQuota()">📉 消费1次额度</button>
+      <button class="btn-danger" onclick="clearStorage()">🗑️ 清空本地存储</button>
+    </div>
+    
+    <div class="button-group">
+      <button class="btn-primary" onclick="manualReset()">🔄 手动重置为20</button>
+      <button class="btn-secondary" onclick="openApp()">🚀 打开应用</button>
+    </div>
+    
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+  <script>
+    function log(message, isError = false) {
+      const logBox = document.getElementById('logBox');
+      const time = new Date().toLocaleTimeString();
+      const prefix = isError ? '❌' : '✅';
+      logBox.innerHTML += `[${time}] ${prefix} ${message}\n`;
+      logBox.scrollTop = logBox.scrollHeight;
+      console.log(message);
+    }
+
+    function getLocalStorage(key) {
+      const value = localStorage.getItem(key);
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
+    }
+
+    function setLocalStorage(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function checkQuota() {
+      log('开始检查配额...');
+      
+      const quota = getLocalStorage('remainingQuota');
+      const lastReset = getLocalStorage('lastResetDate');
+      const today = new Date().toDateString();
+      
+      document.getElementById('quotaDisplay').textContent = quota ?? '未设置';
+      document.getElementById('lastResetDate').textContent = lastReset || '未设置';
+      document.getElementById('todayDate').textContent = today;
+      document.getElementById('needReset').textContent = lastReset !== today ? '是 ✅' : '否';
+      
+      log(`配额: ${quota ?? '未设置'}`);
+      log(`上次重置: ${lastReset || '未设置'}`);
+      log(`今天: ${today}`);
+      log(`需要重置: ${lastReset !== today ? '是' : '否'}`);
+      
+      if (lastReset !== today) {
+        document.getElementById('infoBox').className = 'info-box error';
+        log('⚠️ 检测到日期变化，配额应该重置！', false);
+      } else {
+        document.getElementById('infoBox').className = 'info-box';
+      }
+    }
+
+    function simulateNewDay() {
+      log('模拟新的一天...');
+      
+      // 设置上次重置日期为昨天
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      setLocalStorage('lastResetDate', yesterday);
+      
+      log(`已将上次重置日期设为: ${yesterday}`);
+      log('现在刷新页面应该会自动重置配额为20');
+      
+      checkQuota();
+    }
+
+    function consumeQuota() {
+      log('消费1次额度...');
+      
+      const quota = getLocalStorage('remainingQuota');
+      if (quota === null || quota === undefined) {
+        log('配额未初始化，先设置为20', true);
+        setLocalStorage('remainingQuota', 20);
+        checkQuota();
+        return;
+      }
+      
+      if (quota <= 0) {
+        log('配额不足，无法消费', true);
+        return;
+      }
+      
+      const newQuota = quota - 1;
+      setLocalStorage('remainingQuota', newQuota);
+      log(`配额已减少: ${quota} → ${newQuota}`);
+      
+      checkQuota();
+    }
+
+    function clearStorage() {
+      if (!confirm('确定要清空本地存储吗？这将删除所有配额和日期记录。')) {
+        return;
+      }
+      
+      log('清空本地存储...');
+      localStorage.removeItem('remainingQuota');
+      localStorage.removeItem('lastResetDate');
+      localStorage.removeItem('user_id');
+      
+      log('✅ 本地存储已清空');
+      checkQuota();
+    }
+
+    function manualReset() {
+      log('手动重置配额...');
+      
+      const today = new Date().toDateString();
+      setLocalStorage('remainingQuota', 20);
+      setLocalStorage('lastResetDate', today);
+      
+      log('✅ 配额已重置为20');
+      log(`重置日期: ${today}`);
+      
+      checkQuota();
+    }
+
+    function openApp() {
+      log('打开应用...');
+      window.open('/index.html', '_blank');
+    }
+
+    // 页面加载时自动检查
+    window.addEventListener('load', () => {
+      log('测试工具加载完成');
+      checkQuota();
+    });
+  </script>
+</body>
+</html>

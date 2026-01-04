@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试AI建议生成</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+    .form-group {
+      margin: 20px 0;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #555;
+    }
+    select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      background: white;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .loading {
+      text-align: center;
+      color: #666;
+      padding: 20px;
+      display: none;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border-left: 4px solid #4CAF50;
+      display: none;
+    }
+    .result.error {
+      border-left-color: #f44336;
+      background: #ffebee;
+    }
+    .advice-item {
+      margin: 15px 0;
+      padding: 15px;
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .advice-title {
+      font-weight: bold;
+      color: #4CAF50;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+    .advice-content {
+      color: #333;
+      line-height: 1.6;
+    }
+    .meta {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #eee;
+      color: #999;
+      font-size: 14px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #4CAF50;
+      color: white;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .error-badge {
+      background: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 AI建议生成测试</h1>
+    
+    <div class="form-group">
+      <label for="category">选择题材：</label>
+      <select id="category">
+        <option value="人像摄影">人像摄影</option>
+        <option value="风光摄影">风光摄影</option>
+        <option value="建筑摄影">建筑摄影</option>
+        <option value="宠物摄影">宠物摄影</option>
+        <option value="美食摄影">美食摄影</option>
+        <option value="街拍摄影">街拍摄影</option>
+        <option value="产品摄影">产品摄影</option>
+        <option value="静物摄影">静物摄影</option>
+        <option value="花卉摄影">花卉摄影</option>
+        <option value="夜景摄影">夜景摄影</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="style">选择风格：</label>
+      <select id="style">
+        <option value="日系小清新">日系小清新</option>
+        <option value="复古港风">复古港风</option>
+        <option value="电影感">电影感</option>
+        <option value="胶片风">胶片风</option>
+        <option value="INS风">INS风</option>
+        <option value="暗黑系">暗黑系</option>
+        <option value="高级感">高级感</option>
+        <option value="莫兰迪色">莫兰迪色</option>
+        <option value="赛博朋克">赛博朋克</option>
+        <option value="油画质感">油画质感</option>
+      </select>
+    </div>
+    
+    <button id="testBtn" onclick="testAIAdvice()">🚀 测试AI建议生成</button>
+    
+    <div class="loading" id="loading">
+      ⏳ 正在生成AI建议，请稍候（约10秒）...
+    </div>
+    
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000/api';
+    
+    async function testAIAdvice() {
+      const category = document.getElementById('category').value;
+      const style = document.getElementById('style').value;
+      const resultDiv = document.getElementById('result');
+      const loadingDiv = document.getElementById('loading');
+      const testBtn = document.getElementById('testBtn');
+      
+      // 显示加载状态
+      loadingDiv.style.display = 'block';
+      resultDiv.style.display = 'none';
+      testBtn.disabled = true;
+      
+      console.log('🚀 开始测试AI建议生成');
+      console.log('  题材:', category);
+      console.log('  风格:', style);
+      
+      const startTime = Date.now();
+      
+      try {
+        const response = await fetch(`${API_BASE}/ai/advice`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ category, style })
+        });
+        
+        const duration = Date.now() - startTime;
+        const data = await response.json();
+        
+        console.log('✅ API响应:', data);
+        console.log('  耗时:', duration, 'ms');
+        
+        if (response.ok && data.code === 0 && Array.isArray(data.data)) {
+          // 成功：显示AI建议
+          const adviceTitles = ['构图建议', '光线处理', '拍摄角度', '后期处理', '道具推荐', '注意事项'];
+          
+          let html = `
+            <h2>✨ AI建议生成成功 <span class="badge">AI</span></h2>
+            <div class="meta">
+              题材：${category} | 风格：${style} | 耗时：${(duration/1000).toFixed(1)}秒
+            </div>
+          `;
+          
+          data.data.forEach((advice, index) => {
+            html += `
+              <div class="advice-item">
+                <div class="advice-title">${index + 1}. ${adviceTitles[index] || '其他建议'}</div>
+                <div class="advice-content">${advice}</div>
+              </div>
+            `;
+          });
+          
+          resultDiv.innerHTML = html;
+          resultDiv.className = 'result';
+        } else {
+          // 失败：显示错误信息
+          resultDiv.innerHTML = `
+            <h2>❌ AI建议生成失败 <span class="badge error-badge">ERROR</span></h2>
+            <div class="meta">
+              错误码：${data.code || 'unknown'}<br>
+              错误信息：${data.message || '未知错误'}<br>
+              数据：${JSON.stringify(data, null, 2)}
+            </div>
+          `;
+          resultDiv.className = 'result error';
+        }
+        
+        resultDiv.style.display = 'block';
+      } catch (error) {
+        console.error('❌ 请求失败:', error);
+        
+        resultDiv.innerHTML = `
+          <h2>❌ 网络错误 <span class="badge error-badge">ERROR</span></h2>
+          <div class="meta">
+            错误类型：${error.name}<br>
+            错误信息：${error.message}<br>
+            <br>
+            <strong>可能的原因：</strong><br>
+            1. 后端服务未启动（请运行：cd server && npm start）<br>
+            2. 端口被占用<br>
+            3. 网络连接问题
+          </div>
+        `;
+        resultDiv.className = 'result error';
+        resultDiv.style.display = 'block';
+      } finally {
+        loadingDiv.style.display = 'none';
+        testBtn.disabled = false;
+      }
+    }
+    
+    // 页面加载时自动测试一次
+    window.addEventListener('load', () => {
+      console.log('📄 页面加载完成');
+      console.log('💡 提示：点击按钮测试AI建议生成，或等待自动测试...');
+      
+      // 3秒后自动测试一次
+      setTimeout(() => {
+        console.log('🎬 开始自动测试...');
+        testAIAdvice();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

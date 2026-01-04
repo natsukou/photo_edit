@@ -40,39 +40,48 @@ if (process.env.NODE_ENV === 'production') {
   }));
 }
 
-// CORS配置
+// CORS配置 - 开发环境允许所有来源
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
   ? process.env.ALLOWED_ORIGINS.split(',') 
   : ['http://localhost:8080', 'http://127.0.0.1:8080', 'http://localhost:3000', 'http://127.0.0.1:3000'];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // 允许没有origin的请求（如移动端、Postman等）
-    if (!origin) return callback(null, true);
-    
-    // 检查是否在允许列表中
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      return callback(null, true);
-    }
-    
-    // 允许开发环境
-    if (process.env.NODE_ENV === 'development') {
-      return callback(null, true);
-    }
-    
-    // 允许ModelScope域名（*.modelscope.cn 和 *.ms.show）
-    if (origin.includes('modelscope.cn') || origin.includes('.ms.show') || origin.includes('dsw-')) {
-      return callback(null, true);
-    }
-    
-    // 其他情况拒绝
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-  exposedHeaders: ['Content-Length', 'Content-Type']
-}));
+// 🔥 开发环境使用更宽松的CORS配置
+if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+  console.log('🔓 开发环境：允许所有来源的跨域请求');
+  app.use(cors({
+    origin: true,  // 允许所有来源
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'Content-Type']
+  }));
+} else {
+  // 生产环境使用严格的CORS配置
+  console.log('🔒 生产环境：使用严格的CORS配置');
+  app.use(cors({
+    origin: function (origin, callback) {
+      // 允许没有origin的请求（如移动端、Postman等）
+      if (!origin) return callback(null, true);
+      
+      // 检查是否在允许列表中
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        return callback(null, true);
+      }
+      
+      // 允许ModelScope域名（*.modelscope.cn 和 *.ms.show）
+      if (origin.includes('modelscope.cn') || origin.includes('.ms.show') || origin.includes('dsw-')) {
+        return callback(null, true);
+      }
+      
+      // 其他情况拒绝
+      callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'Content-Type']
+  }));
+}
 
 // 请求体解析（增加到50MB以支持大图片）
 app.use(bodyParser.json({ limit: '50mb' }));

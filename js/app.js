@@ -24,13 +24,18 @@ const App = {
   },
   
   async loadQuota() {
+    console.log('📊 开始加载配额...');
+    
     // 检查是否需要重置每日配额
     const lastResetDate = Utils.storage.get('lastResetDate');
     const today = new Date().toDateString();
     
+    console.log('  上次重置日期:', lastResetDate);
+    console.log('  今天日期:', today);
+    
     // 如果是新的一天，重置配额为20
     if (lastResetDate !== today) {
-      console.log('新的一天，重置配额为20');
+      console.log('🎉 检测到新的一天，重置配额为20');
       this.globalData.remainingQuota = 20;
       Utils.storage.set('remainingQuota', 20);
       Utils.storage.set('lastResetDate', today);
@@ -40,19 +45,26 @@ const App = {
       if (user_id) {
         try {
           await API._request('POST', `/users/${user_id}/reset-quota`);
+          console.log('✅ 服务器配额重置成功');
         } catch (error) {
-          console.log('服务器重置配额失败，使用本地重置');
+          console.log('⚠️ 服务器重置配额失败，使用本地重置');
         }
       }
+      
+      // 🔥 重置后刷新首页显示
+      this.refreshQuotaDisplay();
       return;
     }
     
     // 先从本地存储加载配额（避免显示-1）
     const localQuota = Utils.storage.get('remainingQuota');
+    console.log('  本地存储的配额:', localQuota);
+    
     if (localQuota !== null && localQuota >= 0) {
       this.globalData.remainingQuota = localQuota;
     } else {
       // 首次使用，初始化为20
+      console.log('📝 首次使用，初始化配额为20');
       this.globalData.remainingQuota = 20;
       Utils.storage.set('remainingQuota', 20);
       Utils.storage.set('lastResetDate', today);
@@ -64,12 +76,25 @@ const App = {
       try {
         const userInfo = await API.getUserInfo(user_id);
         if (userInfo && typeof userInfo.remaining_quota === 'number' && userInfo.remaining_quota >= 0) {
+          console.log('✅ 从服务器同步配额:', userInfo.remaining_quota);
           this.globalData.remainingQuota = userInfo.remaining_quota;
           Utils.storage.set('remainingQuota', userInfo.remaining_quota);
+          this.refreshQuotaDisplay();
         }
       } catch (error) {
-        console.log('从服务器获取配额失败，使用本地配额');
+        console.log('⚠️ 从服务器获取配额失败，使用本地配额');
       }
+    }
+    
+    console.log('✅ 配额加载完成:', this.globalData.remainingQuota);
+  },
+  
+  // 🔥 刷新首页的配额显示
+  refreshQuotaDisplay() {
+    const quotaValueEl = document.querySelector('.quota-value');
+    if (quotaValueEl) {
+      quotaValueEl.textContent = `${this.globalData.remainingQuota} 张`;
+      console.log('🔄 已刷新页面配额显示:', this.globalData.remainingQuota);
     }
   },
   
@@ -108,39 +133,31 @@ const App = {
   
   getRemainingQuota() {
     return this.globalData.remainingQuota;
+  },
+  
+  // 🔥 刷新首页的配额显示
+  refreshQuotaDisplay() {
+    const quotaValueEl = document.querySelector('.quota-value');
+    if (quotaValueEl) {
+      quotaValueEl.textContent = `${this.globalData.remainingQuota} 张`;
+      console.log('🔄 已刷新页面配额显示:', this.globalData.remainingQuota);
+    }
   }
 };
 
 // 页面初始化
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('App初始化...');
-  
-  // 首先检查并修复配额
-  const currentQuota = Utils.storage.get('remainingQuota');
-  const today = new Date().toDateString();
-  const lastResetDate = Utils.storage.get('lastResetDate');
-  
-  console.log('当前本地配额:', currentQuota);
-  console.log('上次重置日期:', lastResetDate);
-  console.log('今日日期:', today);
-  
-  // 如果配额异常或未初始化，立即重置为20
-  if (currentQuota === null || currentQuota === undefined || currentQuota < 0) {
-    console.warn('配额异常，重置为20');
-    App.globalData.remainingQuota = 20;
-    Utils.storage.set('remainingQuota', 20);
-    Utils.storage.set('lastResetDate', today);
-  } else {
-    App.globalData.remainingQuota = currentQuota;
-  }
+  console.log('🚀 App初始化...');
   
   // 初始化用户
   await App.initUser();
   
-  // 加载配额（尝试从服务器同步）
+  // 加载配额（会自动检查日期并重置）
   await App.loadQuota();
   
-  console.log('最终配额:', App.globalData.remainingQuota);
+  console.log('✅ 应用初始化完成');
+  console.log('  当前配额:', App.globalData.remainingQuota);
+  console.log('  上次重置日期:', Utils.storage.get('lastResetDate'));
   
   // 注册路由
   Router.register('index', IndexPage.render);
