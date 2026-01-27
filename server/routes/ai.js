@@ -101,12 +101,18 @@ async function callAPIGateway(path, method, body) {
   const fullUrl = `${API_GATEWAY_URL}${path}`;
   console.log('  完整URL:', fullUrl);
   
+  // 使用AbortController设置超时
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  
   const response = await fetch(fullUrl, {
     method,
     headers,
     body: bodyString,
-    timeout: 30000
+    signal: controller.signal
   });
+  
+  clearTimeout(timeoutId);
   
   console.log('  响应状态码:', response.status);
   console.log('  响应头:', JSON.stringify([...response.headers.entries()], null, 2));
@@ -118,6 +124,10 @@ async function callAPIGateway(path, method, body) {
  * 直接调用阿里云API
  */
 async function callDashScopeAPI(endpoint, body) {
+  // 使用AbortController设置超时
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  
   const response = await fetch(`${DASHSCOPE_BASE_URL}${endpoint}`, {
     method: 'POST',
     headers: {
@@ -125,8 +135,10 @@ async function callDashScopeAPI(endpoint, body) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(body),
-    timeout: 30000
+    signal: controller.signal
   });
+  
+  clearTimeout(timeoutId);
   
   return response;
 }
@@ -305,6 +317,10 @@ function parseRecognitionResult(content) {
 router.get('/status', async (req, res) => {
   try {
     // 测试API连接
+    // 使用AbortController设置超时
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     const response = await fetch(`${DASHSCOPE_BASE_URL}/services/aigc/text-generation/generation`, {
       method: 'POST',
       headers: {
@@ -317,8 +333,10 @@ router.get('/status', async (req, res) => {
           messages: [{ role: 'user', content: 'ping' }]
         }
       }),
-      timeout: 5000
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
 
     const available = response.ok;
 

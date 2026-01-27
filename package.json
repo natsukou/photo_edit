@@ -1,7 +1,7 @@
 {
-  "name": "red-velvet-h5",
+  "name": "red-velvet-photography-assistant",
   "version": "1.0.0",
-  "description": "红色丝绒 - H5网页版",
+  "description": "红色丝绒·摄影助手 - H5网页版",
   "main": "index.html",
   "scripts": {
     "start": "python3 -m http.server 8080",

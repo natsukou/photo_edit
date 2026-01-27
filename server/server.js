@@ -14,6 +14,7 @@ const photosRouter = require('./routes/photos');
 const analyticsRouter = require('./routes/analytics');
 const feedbackRouter = require('./routes/feedback');
 const aiRouter = require('./routes/ai');
+const maxcomputeRouter = require('./routes/maxcompute');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -69,7 +70,7 @@ if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
       }
       
       // 允许ModelScope域名（*.modelscope.cn 和 *.ms.show）
-      if (origin.includes('modelscope.cn') || origin.includes('.ms.show') || origin.includes('dsw-')) {
+      if (origin.includes('modelscope.cn') || origin.includes('.ms.show') || origin.includes('dsw-') || origin.includes('modelscope.app')) {
         return callback(null, true);
       }
       
@@ -121,6 +122,7 @@ app.use('/api/photos', photosRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/maxcompute', maxcomputeRouter);
 
 // 静态文件服务（必须在404之前）
 const path = require('path');
@@ -206,6 +208,12 @@ async function startServer() {
       console.log(`    POST   /api/ai/recognize             - 图片风格识别`);
       console.log(`    POST   /api/ai/advice               - AI生成拍摄建议`);
       console.log(`    GET    /api/ai/status                - AI服务状态`);
+      console.log('');
+      console.log('  MaxCompute数据同步:');
+      console.log(`    POST   /api/maxcompute/sync-now      - 立即同步数据`);
+      console.log(`    GET    /api/maxcompute/stats         - 同步统计信息`);
+      console.log(`    POST   /api/maxcompute/schedule      - 配置定时任务`);
+      console.log(`    GET    /api/maxcompute/schema        - 获取表结构`);
       console.log('');
       console.log('═══════════════════════════════════════════════');
     });

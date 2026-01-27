@@ -1,0 +1,83 @@
+{
+  "model_info": {
+    "name": "红色丝绒·摄影助手",
+    "id": "red-velvet-photography-assistant",
+    "author": "GreeNakia",
+    "description": "一款基于AI的智能拍照辅助工具，帮助摄影小白和内容创作者快速掌握拍摄技巧",
+    "tags": [
+      "photography",
+      "ai",
+      "photo-guide",
+      "computer-vision",
+      "image-analysis"
+    ],
+    "infrastructure": {
+      "framework": "html-js-css",
+      "runtime": "static",
+      "resources": {
+        "cpu": "1",
+        "memory": "512Mi",
+        "storage": "1Gi"
+      }
+    }
+  },
+  "deployment": {
+    "type": "static",
+    "entry_point": "index.html",
+    "static_assets": [
+      "css/",
+      "js/",
+      "images/",
+      "index.html"
+    ],
+    "environment": {
+      "NODE_ENV": "production"
+    }
+  },
+  "api_endpoints": [
+    {
+      "name": "AI图片识别",
+      "path": "/api/ai/recognize",
+      "method": "POST",
+      "description": "识别上传图片的摄影题材和风格"
+    },
+    {
+      "name": "AI建议生成",
+      "path": "/api/ai/advice",
+      "method": "POST",
+      "description": "根据题材和风格生成拍摄建议"
+    },
+    {
+      "name": "用户管理",
+      "path": "/api/users/*",
+      "method": "ALL",
+      "description": "用户登录、配额管理等功能"
+    }
+  ],
+  "dependencies": {
+    "frontend": [
+      "html5",
+      "css3",
+      "javascript-es6",
+      "canvas-api"
+    ],
+    "backend": [
+      "nodejs-18",
+      "express-4",
+      "mysql-8"
+    ]
+  },
+  "permissions": {
+    "camera": "optional",
+    "microphone": "none",
+    "location": "none",
+    "notifications": "none"
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": "https://github.com/GreeNakia/red-velvet-photography-assistant",
+    "homepage": "https://github.com/GreeNakia/red-velvet-photography-assistant",
+    "demo_url": "https://your-modelscope-demo-url.cn-shanghai.modelports.com"
+  }
+}

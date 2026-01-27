@@ -1,4 +1,22 @@
-# 📷 红色丝绒
+---
+title: 红色丝绒·摄影助手
+app_file: index.html
+sdk: static
+emoji: 📷
+colorFrom: red
+colorTo: pink
+pinned: false
+license: mit
+tags:
+  - photography
+  - ai
+  - photo-guide
+  - computer-vision
+  - image-analysis
+short_description: 基于AI的智能拍照辅助工具
+---
+
+# 📷 红色丝绒·摄影助手
 
 一款基于AI的智能拍照辅助工具，帮助摄影小白和内容创作者快速掌握拍摄技巧。
 

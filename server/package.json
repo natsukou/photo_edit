@@ -1,7 +1,7 @@
 {
-  "name": "red-velvet-server",
+  "name": "red-velvet-photography-assistant-server",
   "version": "1.0.0",
-  "description": "红色丝绒后端API服务",
+  "description": "红色丝绒·摄影助手后端API服务",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -28,7 +28,8 @@
     "node-fetch": "^2.7.0",
     "serverless-http": "^3.2.0",
     "sharp": "^0.34.5",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "csv-writer": "^1.6.0"
   },
   "devDependencies": {
     "@serverless-devs/s": "^3.1.10",

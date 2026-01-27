@@ -15,8 +15,8 @@ const IndexPage = {
         
         <div class="container index-container">
           <div class="header">
-            <h1 class="title">📸 红色丝绒</h1>
-            <p class="subtitle">RED VELVET · PHOTOGRAPHY STUDIO</p>
+            <h1 class="title">📸 红色丝绒·摄影助手</h1>
+            <p class="subtitle">RED VELVET · PHOTOGRAPHY ASSISTANT</p>
             <div class="quota-info">
               <span class="quota-label">剩余额度：</span>
               <span class="quota-value">${App.getRemainingQuota()} 张</span>
