@@ -166,6 +166,7 @@ router.post('/recognize', async (req, res) => {
     const { image } = req.body;
 
     if (!image) {
+      console.error('❌ 缺少图片数据');
       return res.status(400).json({
         code: -1,
         message: '缺少图片数据'
@@ -173,11 +174,11 @@ router.post('/recognize', async (req, res) => {
     }
 
     console.log('收到AI识别请求，图片大小:', image.length, '字符');
+    console.log('图片格式:', image.substring(0, 50));
 
-    // 压缩图片以满足API限制
-    console.log('📊 开始压缩图片...');
-    const compressedImage = await compressImage(image);
-    console.log('✅ 图片压缩完成，压缩后大小:', compressedImage.length, '字符');
+    // 🔥 简化：直接透传图片，不进行后端压缩
+    console.log('📊 跳过后端压缩，直接透传图片...');
+    const compressedImage = image;
 
     // 移除base64前缀（如果有）
     let imageData = compressedImage;
