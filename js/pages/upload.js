@@ -35,7 +35,12 @@ const UploadPage = {
           
           <div class="loading-section hidden" id="loadingSection">
             <div class="spinner"></div>
-            <p class="loading-text">AI正在识别照片风格...</p>
+            <p class="loading-text" id="loadingText">AI正在识别照片风格...</p>
+          </div>
+          
+          <div class="loading-section hidden" id="compressSection">
+            <div class="spinner"></div>
+            <p class="loading-text">正在处理图片...</p>
           </div>
         </div>
       </div>
@@ -93,11 +98,21 @@ const UploadPage = {
     const file = e.target.files[0];
     if (!file) return;
     
+    // 🔥 显示压缩/处理提示
+    const compressSection = document.getElementById('compressSection');
+    const uploadArea = document.getElementById('uploadArea');
+    if (compressSection && uploadArea) {
+      uploadArea.classList.add('hidden');
+      compressSection.classList.remove('hidden');
+    }
+    
     // 🔥 压缩图片以避免请求体过大
     this.compressImage(file, (compressedDataUrl) => {
       this.imageUrl = compressedDataUrl;
       App.globalData.currentImage = this.imageUrl;
       
+      // 隐藏压缩提示，显示预览
+      if (compressSection) compressSection.classList.add('hidden');
       document.getElementById('uploadArea').classList.add('hidden');
       document.getElementById('imagePreview').classList.remove('hidden');
       document.getElementById('previewImg').src = this.imageUrl;

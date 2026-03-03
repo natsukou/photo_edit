@@ -25,11 +25,18 @@ console.log('  DASHSCOPE_API_KEY:', DASHSCOPE_API_KEY ? DASHSCOPE_API_KEY.substr
 
 /**
  * 压缩图片以满足API限制（20MB base64）
+ * 🔥 如果sharp不可用，直接返回原图
  */
 async function compressImage(base64Data) {
   try {
-    // 🔥 按需加载sharp
-    const sharp = require('sharp');
+    // 🔥 按需加载sharp，如果失败则跳过压缩
+    let sharp;
+    try {
+      sharp = require('sharp');
+    } catch (e) {
+      console.warn('⚠️ sharp库未安装，跳过后端压缩，使用前端压缩后的图片');
+      return base64Data;
+    }
     
     // 移除data URL前缀
     let base64String = base64Data;
@@ -40,6 +47,12 @@ async function compressImage(base64Data) {
     // 转换为Buffer
     const imageBuffer = Buffer.from(base64String, 'base64');
     console.log('原始图片大小:', imageBuffer.length, 'bytes');
+    
+    // 🔥 如果图片小于500KB，不压缩直接返回
+    if (imageBuffer.length < 500 * 1024) {
+      console.log('图片小于500KB，跳过压缩');
+      return base64Data;
+    }
     
     // 使用sharp压缩图片，限制在800px宽度，质量80%
     const compressedBuffer = await sharp(imageBuffer)
@@ -68,7 +81,8 @@ async function compressImage(base64Data) {
     return dataUrl;
   } catch (error) {
     console.error('图片压缩失败:', error);
-    throw error;
+    console.warn('⚠️ 压缩失败，返回原图');
+    return base64Data; // 🔥 压缩失败也返回原图，不要抛错
   }
 }
 
