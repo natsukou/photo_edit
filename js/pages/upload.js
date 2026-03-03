@@ -106,14 +106,26 @@ const UploadPage = {
   
   // 🔥 新增：压缩图片方法
   compressImage(file, callback) {
+    // 检查文件大小，小于 10MB 的图片不压缩直接返回
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size < maxSize) {
+      console.log('图片小于 10MB，跳过压缩:', file.size);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        callback(event.target.result);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+    
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        // 计算压缩后的尺寸（最大宽度 800px）
+        // 计算压缩后的尺寸（最大宽度 1500px）
         let width = img.width;
         let height = img.height;
-        const maxWidth = 800;
+        const maxWidth = 1500;
         
         if (width > maxWidth) {
           height = Math.round(height * maxWidth / width);
@@ -127,8 +139,8 @@ const UploadPage = {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         
-        // 转换为 JPEG，质量 0.8
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        // 转换为 JPEG，质量 0.85（提高质量）
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
         console.log('图片压缩完成:', {
           original: file.size,
           compressed: Math.round(compressedDataUrl.length * 0.75), // base64 约为原图 1.33 倍
