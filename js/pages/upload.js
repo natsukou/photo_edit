@@ -93,14 +93,52 @@ const UploadPage = {
     const file = e.target.files[0];
     if (!file) return;
     
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      this.imageUrl = event.target.result;
+    // 🔥 压缩图片以避免请求体过大
+    this.compressImage(file, (compressedDataUrl) => {
+      this.imageUrl = compressedDataUrl;
       App.globalData.currentImage = this.imageUrl;
       
       document.getElementById('uploadArea').classList.add('hidden');
       document.getElementById('imagePreview').classList.remove('hidden');
       document.getElementById('previewImg').src = this.imageUrl;
+    });
+  },
+  
+  // 🔥 新增：压缩图片方法
+  compressImage(file, callback) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // 计算压缩后的尺寸（最大宽度 800px）
+        let width = img.width;
+        let height = img.height;
+        const maxWidth = 800;
+        
+        if (width > maxWidth) {
+          height = Math.round(height * maxWidth / width);
+          width = maxWidth;
+        }
+        
+        // 创建 canvas 进行压缩
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // 转换为 JPEG，质量 0.8
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        console.log('图片压缩完成:', {
+          original: file.size,
+          compressed: Math.round(compressedDataUrl.length * 0.75), // base64 约为原图 1.33 倍
+          width,
+          height
+        });
+        
+        callback(compressedDataUrl);
+      };
+      img.src = event.target.result;
     };
     reader.readAsDataURL(file);
   },
@@ -161,7 +199,18 @@ const UploadPage = {
       console.error('AI分析错误:', error);
       console.error('错误详情:', error.message);
       console.error('错误堆栈:', error.stack);
-      Utils.toast('分析失败: ' + (error.message || '请重试'));
+      
+      // 🔥 更友好的错误提示
+      let errorMsg = '分析失败，请重试';
+      if (error.message.includes('400')) {
+        errorMsg = '图片太大，请尝试上传更小的图片';
+      } else if (error.message.includes('timeout') || error.message.includes('超时')) {
+        errorMsg = '请求超时，请稍后重试';
+      } else if (error.message.includes('Failed to fetch')) {
+        errorMsg = '网络连接失败，请检查网络';
+      }
+      
+      Utils.toast(errorMsg);
       document.getElementById('loadingSection').classList.add('hidden');
       document.getElementById('imagePreview').classList.remove('hidden');
     }
