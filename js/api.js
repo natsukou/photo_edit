@@ -9,10 +9,10 @@ const API_CONFIG = {
     console.log('当前协议:', protocol);
     console.log('是否包含modelscope:', hostname.includes('modelscope'));
     
-    // ModelScope环境使用ECS后端地址
+    // ModelScope环境使用Cloudflare Tunnel HTTPS地址
     if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname.includes('.ms.show')) {
-      console.log('✅ 使用ECS后端地址');
-      return 'http://139.224.199.2:3000/api';
+      console.log('✅ 使用Cloudflare Tunnel HTTPS地址');
+      return 'https://configurations-posted-wanting-breaks.trycloudflare.com/api';
     }
     
     // 本地开发环境
