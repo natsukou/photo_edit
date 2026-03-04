@@ -9,10 +9,10 @@ const API_CONFIG = {
     console.log('当前协议:', protocol);
     console.log('是否包含modelscope:', hostname.includes('modelscope'));
     
-    // ModelScope环境使用Cloudflare Tunnel HTTPS地址
+    // ModelScope环境使用阿里云API网关HTTPS地址
     if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname.includes('.ms.show')) {
-      console.log('✅ 使用Cloudflare Tunnel HTTPS地址');
-      return 'https://configurations-posted-wanting-breaks.trycloudflare.com/api';
+      console.log('✅ 使用阿里云API网关HTTPS地址');
+      return 'https://1e18b552bf17466f8f154119a7995455-cn-shanghai.alicloudapi.com/api';
     }
     
     // 本地开发环境
