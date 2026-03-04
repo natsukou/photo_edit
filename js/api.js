@@ -12,6 +12,8 @@ const API_CONFIG = {
     // ModelScope环境使用阿里云API网关HTTPS地址
     if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname.includes('.ms.show')) {
       console.log('✅ 使用阿里云API网关HTTPS地址');
+      // API网关配置：BasePath=/api, 请求Path=/{path}
+      // 前端请求 /api/ai/recognize 匹配后端 /api/ai/recognize
       return 'https://1e18b552bf17466f8f154119a7995455-cn-shanghai.alicloudapi.com/api';
     }
     
