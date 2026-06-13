@@ -10,19 +10,20 @@ cat << 'INSTRUCTIONS'
 
 请SSH登录到ECS服务器，然后执行以下命令：
 
-ssh root@139.224.199.2
+ssh deploy@your-server.example.com
 
 登录后执行：
 
-cd /root/photo_advice2
+cd /srv/photo-edit
 git pull origin master
 cd server
 npm install
+cp .env.example .env
 
-# 配置API Key（如果.env文件中没有）
-echo "" >> .env
-echo "# 阿里云百炼API配置" >> .env
-echo "DASHSCOPE_API_KEY=sk-8bb7317eaf36424580fbfbe2ae3ff037" >> .env
+# 编辑 .env，填写真实配置
+# DASHSCOPE_API_KEY=YOUR_DASHSCOPE_API_KEY
+# DB_HOST=YOUR_DB_HOST
+# DB_PASSWORD=YOUR_DB_PASSWORD
 
 # 重启服务
 pm2 restart photo-advice-server
@@ -39,10 +40,10 @@ curl -X GET http://localhost:3000/api/ai/status
 ========================================
 
 1. 测试AI服务状态：
-   curl http://139.224.199.2:3000/api/ai/status
+   curl http://localhost:3000/api/ai/status
 
 2. 打开测试页面：
-   http://139.224.199.2:3000/test-ali-api.html
+   http://localhost:3000/test-ali-api.html
 
 3. 上传图片测试AI识别
 

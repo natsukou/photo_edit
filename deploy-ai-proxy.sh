@@ -9,14 +9,15 @@ echo "========================================="
 echo ""
 
 # 服务器信息
-SERVER_HOST="139.224.199.2"
-SERVER_USER="root"
-PROJECT_PATH="/root/photo_advice2"
-API_KEY="sk-8bb7317eaf36424580fbfbe2ae3ff037"
+SERVER_HOST="${SERVER_HOST:-your-server.example.com}"
+SERVER_USER="${SERVER_USER:-deploy}"
+PROJECT_PATH="${PROJECT_PATH:-/srv/photo-edit}"
+API_KEY="${DASHSCOPE_API_KEY:-your-dashscope-api-key}"
 
 echo "📋 部署配置："
 echo "  服务器: ${SERVER_USER}@${SERVER_HOST}"
 echo "  项目路径: ${PROJECT_PATH}"
+echo "  API Key 已配置: $([ "${API_KEY}" != "your-dashscope-api-key" ] && echo "yes" || echo "no")"
 echo ""
 
 # SSH连接并执行部署
@@ -36,6 +37,11 @@ npm install
 
 echo ""
 echo "=== 3. 配置阿里云API Key ==="
+if [ "${API_KEY}" = "your-dashscope-api-key" ]; then
+  echo "❌ 请先在本机导出 DASHSCOPE_API_KEY 后再运行脚本"
+  exit 1
+fi
+
 # 备份现有.env
 if [ -f .env ]; then
   cp .env .env.backup.\$(date +%Y%m%d_%H%M%S)
@@ -84,7 +90,7 @@ echo "✅ 部署脚本执行完成"
 echo "========================================="
 echo ""
 echo "📝 接下来的步骤："
-echo "  1. 打开测试页面：http://139.224.199.2:3000/test-ali-api.html"
+echo "  1. 打开你的测试页面或本地页面"
 echo "  2. 上传一张图片测试AI识别"
 echo "  3. 检查后端代理是否正常工作"
 echo ""

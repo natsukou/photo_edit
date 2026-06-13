@@ -156,7 +156,7 @@ base64Image: "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
 {
   endpoint: "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation",
   model: "qwen-vl-plus",       // 阿里云通义千问视觉模型
-  apiKey: "sk-8bb7317eaf36424580fbfbe2ae3ff037"
+  apiKey: "your-dashscope-api-key"
 }
 ```
 
@@ -196,7 +196,7 @@ base64Image: "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
 {
   endpoint: "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
   model: "qwen-turbo",         // 阿里云通义千问文本模型
-  apiKey: "sk-8bb7317eaf36424580fbfbe2ae3ff037"
+  apiKey: "your-dashscope-api-key"
 }
 ```
 
@@ -285,7 +285,7 @@ async analyzeImage() {
 
 ```javascript
 const AliCloud = {
-  apiKey: 'sk-8bb7317eaf36424580fbfbe2ae3ff037',  // 你的API Key
+  apiKey: 'your-dashscope-api-key',
   baseURL: 'https://dashscope.aliyuncs.com/api/v1'
 };
 ```

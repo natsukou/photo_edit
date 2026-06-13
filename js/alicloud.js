@@ -1,7 +1,7 @@
 // 阿里云百炼API封装
 
 const AliCloud = {
-  apiKey: 'sk-8bb7317eaf36424580fbfbe2ae3ff037',
+  apiKey: '',
   baseURL: 'https://dashscope.aliyuncs.com/api/v1',
   
   // 图片识别风格

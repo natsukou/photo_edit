@@ -29,3 +29,6 @@ QUICK-START.md
 # 测试脚本
 test-api.sh
 run.sh
+
+# 打包产物
+*.tar.gz

@@ -3,17 +3,17 @@
 # 更新ECS上的CORS配置
 # 使用方法: bash update-ecs-cors.sh
 
-ECS_HOST="139.224.199.2"
-ECS_USER="root"
-SERVER_DIR="/root/server"
+ECS_HOST="${ECS_HOST:-your-server.example.com}"
+ECS_USER="${ECS_USER:-deploy}"
+SERVER_DIR="${SERVER_DIR:-/srv/photo-edit/server}"
 
 echo "🚀 开始更新ECS服务器CORS配置..."
 echo ""
 
 # 使用SSH执行远程命令
-ssh ${ECS_USER}@${ECS_HOST} << 'ENDSSH'
+ssh ${ECS_USER}@${ECS_HOST} "SERVER_DIR='${SERVER_DIR}' bash -s" << 'ENDSSH'
 
-cd /root/server
+cd "${SERVER_DIR}"
 
 echo "=== 1. 备份当前server.js ==="
 cp server.js server.js.backup.$(date +%Y%m%d_%H%M%S)

@@ -28,7 +28,7 @@ const API_CONFIG = {
     // ⚠️ 签名逻辑已移至后端，前端无需配置AppSecret
     // 后端会在转发请求时自动添加签名
     enabled: false,  // 前端关闭签名，由后端处理
-    appKey: '112266072',
+    appKey: '',
     appSecret: ''  // 已移至后端环境变量
   }
 };

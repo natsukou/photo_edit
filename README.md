@@ -6,7 +6,7 @@ emoji: 📷
 colorFrom: red
 colorTo: pink
 pinned: false
-license: mit
+license: other
 tags:
   - photography
   - ai
@@ -19,6 +19,12 @@ short_description: 基于AI的智能拍照辅助工具
 # 📷 红色丝绒·摄影助手
 
 一款基于AI的智能拍照辅助工具，帮助摄影小白和内容创作者快速掌握拍摄技巧。
+
+## 保密说明
+
+- 本仓库为私有项目整理版，不授权公开分发源码、配置、部署信息或衍生资料
+- 任何对外共享、演示、转交第三方前，需先获得项目权利人书面批准
+- 对外协作前请先阅读 [NDA_AGREEMENT.md](/Users/nakia/Documents/Playground/photo_edit/NDA_AGREEMENT.md)
 
 ## ✨ 功能特性
 
@@ -40,6 +46,6 @@ short_description: 基于AI的智能拍照辅助工具
 - AI识别：阿里云通义千问
 - 部署：阿里云函数计算 (Serverless)
 
-## 📝 License
+## 📝 权限说明
 
-MIT License
+本项目不是开源项目。访问、评估、讨论、复制和再分发均受 [NDA_AGREEMENT.md](/Users/nakia/Documents/Playground/photo_edit/NDA_AGREEMENT.md) 约束。

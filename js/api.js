@@ -1,7 +1,16 @@
+const DEFAULT_HOSTED_API_BASE = 'https://your-api.example.com/api';
+
 // API 基础配置
 const API_CONFIG = {
+  defaultHostedBase: DEFAULT_HOSTED_API_BASE,
   // 生产环境使用函数计算HTTPS地址，本地开发使用localhost
   baseURL: (function() {
+    if (typeof window.__PHOTO_ADVICE_API_BASE__ === 'string' && window.__PHOTO_ADVICE_API_BASE__.length > 0) {
+      const u = window.__PHOTO_ADVICE_API_BASE__.replace(/\/$/, '');
+      console.log('✅ 使用注入的 API 基址:', u);
+      return u.endsWith('/api') ? u : `${u}/api`;
+    }
+
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
     
@@ -9,12 +18,15 @@ const API_CONFIG = {
     console.log('当前协议:', protocol);
     console.log('是否包含modelscope:', hostname.includes('modelscope'));
     
-    // ModelScope环境使用阿里云API网关HTTPS地址
+    // ModelScope环境使用注入或占位托管地址
     if (hostname.includes('modelscope') || hostname.includes('dsw-') || hostname.includes('.ms.show')) {
-      console.log('✅ 使用阿里云API网关HTTPS地址');
-      // API网关配置：BasePath=/api, 请求Path=/{path}
-      // 前端请求 /api/ai/recognize 匹配后端 /api/ai/recognize
-      return 'https://1e18b552bf17466f8f154119a7995455-cn-shanghai.alicloudapi.com/api';
+      console.log('⚠️ 使用默认托管 API 占位地址，请按 README 或运行环境注入真实地址');
+      return DEFAULT_HOSTED_API_BASE;
+    }
+
+    if (protocol === 'file:' || !hostname) {
+      console.log('⚠️ 本地文件或空 host，使用默认托管 API 占位地址，请按 README 配置真实地址');
+      return DEFAULT_HOSTED_API_BASE;
     }
     
     // 本地开发环境
@@ -28,7 +40,7 @@ const API_CONFIG = {
     // ⚠️ 签名逻辑已移至后端，前端无需配置AppSecret
     // 后端会在转发请求时自动添加签名
     enabled: false,  // 前端关闭签名，由后端处理
-    appKey: '112266072',
+    appKey: '',
     appSecret: ''  // 已移至后端环境变量
   }
 };

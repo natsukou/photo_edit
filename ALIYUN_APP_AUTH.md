@@ -11,8 +11,8 @@
    - **APP名称**：`photo-advice-app`
    - **描述**：AI拍照辅助应用
 5. 创建成功后，记录：
-   - **AppKey**：例如 `203976635`
-   - **AppSecret**：例如 `KMzLxUJvyqgsKxPU...`（保密！）
+   - **AppKey**：`YOUR_APP_KEY`
+   - **AppSecret**：`YOUR_APP_SECRET`（仅保存在服务端）
 
 ---
 
@@ -42,8 +42,8 @@
 ```javascript
 aliyunApp: {
   enabled: true,  // 启用签名
-  appKey: '203976635',  // 替换为您的AppKey
-  appSecret: 'KMzLxUJvyqgsKxPU...'  // 替换为您的AppSecret
+  appKey: 'YOUR_APP_KEY',
+  appSecret: 'YOUR_APP_SECRET'
 }
 ```
 
@@ -103,7 +103,7 @@ fetch(apiGatewayUrl, { headers: signedHeaders.data });
 
 ```bash
 curl -X POST \
-  https://b6cb40828efb4332baaef3da54b96514-cn-shanghai.alicloudapi.com/api/ai/recognize \
+  https://your-api-gateway.example.com/api/ai/recognize \
   -H "X-Ca-Key: YOUR_APP_KEY" \
   -H "X-Ca-Signature: CALCULATED_SIGNATURE" \
   -H "X-Ca-Timestamp: CURRENT_TIMESTAMP" \

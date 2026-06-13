@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# ECS HTTPS配置脚本
+# HTTPS 配置模板
 # 使用Nginx反向代理 + Let's Encrypt免费证书
+
+DOMAIN="${DOMAIN:-your-domain.example.com}"
 
 echo "======================================"
 echo "配置ECS HTTPS支持"
@@ -17,7 +19,7 @@ echo "步骤2: 配置Nginx..."
 cat > /etc/nginx/sites-available/photo-api << 'EOF'
 server {
     listen 80;
-    server_name 139.224.199.2;
+    server_name DOMAIN_PLACEHOLDER;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -43,6 +45,8 @@ server {
 }
 EOF
 
+sed -i.bak "s/DOMAIN_PLACEHOLDER/${DOMAIN}/g" /etc/nginx/sites-available/photo-api
+
 # 启用站点
 ln -sf /etc/nginx/sites-available/photo-api /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
@@ -60,8 +64,7 @@ echo "✅ HTTP配置完成！"
 echo "======================================"
 echo ""
 echo "测试访问："
-echo "  http://139.224.199.2/health"
+echo "  http://${DOMAIN}/health"
 echo ""
-echo "注意：由于没有域名，暂时无法配置HTTPS证书"
-echo "建议：购买域名后使用 certbot 配置免费证书"
+echo "后续可执行 certbot --nginx -d ${DOMAIN} 配置 HTTPS 证书"
 echo ""

@@ -6,13 +6,13 @@ const fetch = require('node-fetch');
 const APISignature = require('../utils/api-signature');
 
 // 阿里云百炼API配置
-const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY || 'sk-8bb7317eaf36424580fbfbe2ae3ff037';
-const DASHSCOPE_BASE_URL = 'https://dashscope.aliyuncs.com/api/v1';
+const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY || '';
+const DASHSCOPE_BASE_URL = process.env.DASHSCOPE_BASE_URL || 'https://dashscope.aliyuncs.com/api/v1';
 
 // API网关配置
-const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'https://b6cb40828efb4332baaef3da54b96514-cn-shanghai.alicloudapi.com';
-const ALIYUN_APP_KEY = process.env.ALIYUN_APP_KEY || '112266072';
-const ALIYUN_APP_SECRET = process.env.ALIYUN_APP_SECRET || 'Kn5eYBngioFH8a5Pz4XApnMQ3ls62GV4';
+const API_GATEWAY_URL = process.env.API_GATEWAY_URL || '';
+const ALIYUN_APP_KEY = process.env.ALIYUN_APP_KEY || '';
+const ALIYUN_APP_SECRET = process.env.ALIYUN_APP_SECRET || '';
 
 // 判断是否使用API网关
 const USE_API_GATEWAY = process.env.USE_API_GATEWAY === 'true' || false;
